@@ -6,9 +6,10 @@ import requests as http_request
 import os
 from flask_jwt_extended import JWTManager, set_access_cookies
 
+from flask_cors import CORS
 
 app = Flask(__name__, template_folder="templates")
-basedir = os.path.abspath(os.path.dirname(__file__))
+CORS(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:postgres@localhost:5432/todo"
 db.init_app(app)
@@ -83,10 +84,8 @@ def get_user(id):
 
 @app.route("/users", methods=["POST"])
 def create_user():
-    email = request.form.get("email")
-    password = request.form.get("password")
-    print(email, password)
-    user = User(name=email, email=email, password=password)
+    data = request.json
+    user = User(name=data["username"], email=data["email"], password=data["password"])
     db.session.add(user)
     db.session.commit()
     return jsonify(user.serialize())
