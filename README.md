@@ -24,4 +24,6 @@ Todas as rotas que gerenciam conteúdos de tarefas e dados de usuário, como /ap
 5. Por fim, para rodar a API, execute `python -m flask --app src.main run`
 
 ## Demo
-[Screencast from 2024-04-22 01-47-03.webm](https://github.com/elisaflemer/ponderadas-modulo10/assets/99259251/7ce4dba8-00e2-4b16-bfae-4e6a81e011e2)
+
+https://github.com/elisaflemer/ponderadas-modulo10/assets/99259251/33079ba3-e998-4dd5-843e-a45a1fdaf1ee
+
