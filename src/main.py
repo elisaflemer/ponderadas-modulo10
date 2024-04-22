@@ -1,34 +1,35 @@
-from flask import Flask, render_template, make_response
-from database.database import db
-from flask import jsonify, request
-from database.models import User, Task
-import requests as http_request
-import os
-from flask_jwt_extended import JWTManager, set_access_cookies
-
+from flask import Flask, render_template, request, jsonify, make_response
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity, set_access_cookies
+import requests as http_request
+from database.database import db
+from database.models import User, Task
+import os
+import sys
 
+# Flask application initialization
 app = Flask(__name__, template_folder="templates")
 CORS(app)
 
+# Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:postgres@localhost:5432/todo"
 db.init_app(app)
-# Setup the Flask-JWT-Extended extension
-app.config["JWT_SECRET_KEY"] = "goku-vs-vegeta" 
-# Seta o local onde o token será armazenado
+
+# JWT configuration
+app.config["JWT_SECRET_KEY"] = "goku-vs-vegeta"
 app.config['JWT_TOKEN_LOCATION'] = ['cookies']
-app.config['JWT_COOKIE_CSRF_PROTECT'] = False 
+app.config['JWT_COOKIE_CSRF_PROTECT'] = False
 jwt = JWTManager(app)
-import sys
+
+# Database setup command line argument
 if len(sys.argv) > 1 and sys.argv[1] == 'create_db':
-    # cria o banco de dados
     with app.app_context():
         db.create_all()
-    # Finaliza a execução do programa
     print("Database created successfully")
     sys.exit(0)
 
-@app.route("/")
+# Routes
+@app.route("/api/v1")
 def hello_world():
     return "<p>Hello, World!</p>"
 
@@ -40,24 +41,19 @@ def user_register():
 def user_login():
     return render_template("login.html")
 
-@app.route("/login", methods=["POST"])
+@app.route("/api/v1/login", methods=["POST"])
 def login():
+    print(request.json)
     username = request.json.get("username", None)
     password = request.json.get("password", None)
-    # Verifica os dados enviados não estão nulos
-    if username is None or password is None:
-        # the user was not found on the database
-        return render_template("error.html", message="Bad username or password")
-    # faz uma chamada para a criação do token
-    token_data = http_request.post("http://localhost:5000/token", json={"username": username, "password": password})
+    if not username or not password:
+        return render_template("error.html", message="Bad username or password"), 400
+    token_data = http_request.post("http://localhost:5000/api/v1/token", json={"username": username, "password": password})
     if token_data.status_code != 200:
-        return render_template("error.html", message="Bad username or password")
-    # recupera o token
+        return render_template("error.html", message="Bad username or password"), token_data.status_code
     response = jsonify({"success": True})
     set_access_cookies(response, token_data.json()['token'], max_age=60*60*24*7)
     return response
-
-from flask_jwt_extended import jwt_required, get_jwt_identity
 
 @app.route("/content", methods=["GET"])
 @jwt_required()
@@ -68,115 +64,110 @@ def content():
 def error():
     return render_template("error.html")
 
-# Adicionando as rotas CRUD para a entidade User
-@app.route("/users", methods=["GET"])
-def get_users():
-    users = User.query.all()
-    return_users = []
-    for user in users:
-        return_users.append(user.serialize())
-    return jsonify(return_users)
-
-@app.route("/users/<int:id>", methods=["GET"])
-def get_user(id):
-    user = User.query.get(id)
+@app.route("/api/v1/users/<int:id>", methods=["GET"])
+@jwt_required()
+def get_user():
+    user = User.query.get(get_jwt_identity())
+    if user is None:
+        return jsonify({"error": "User not found"}), 404
     return jsonify(user.serialize())
 
-@app.route("/users", methods=["POST"])
+@app.route("/api/v1/users", methods=["GET"])
+@jwt_required()
+def get_users():
+    current_user = User.query.get(get_jwt_identity())
+    if current_user.name != "admin":
+        return jsonify({"error": "Unauthorized"}), 401
+
+    users = User.query.all()
+    return jsonify([user.serialize() for user in users])
+
+@app.route("/api/v1/users", methods=["POST"])
 def create_user():
     data = request.json
     user = User(name=data["username"], email=data["email"], password=data["password"])
     db.session.add(user)
     db.session.commit()
-    return jsonify(user.serialize())
+    return jsonify(user.serialize()), 201
 
-@app.route("/users/<int:id>", methods=["PUT"])
+@app.route("/api/v1/users/<int:id>", methods=["PUT"])
+@jwt_required()
 def update_user(id):
-    data = request.json
     user = User.query.get(id)
+    if user is None:
+        return jsonify({"error": "User not found"}), 404
+    data = request.json
     user.name = data["name"]
     user.email = data["email"]
     user.password = data["password"]
     db.session.commit()
     return jsonify(user.serialize())
 
-@app.route("/users/<int:id>", methods=["DELETE"])
+@app.route("/api/v1/users/<int:id>", methods=["DELETE"])
+@jwt_required()
 def delete_user(id):
     user = User.query.get(id)
+    if user is None:
+        return jsonify({"error": "User not found"}), 404
     db.session.delete(user)
     db.session.commit()
-    return jsonify(user.serialize())
+    return jsonify({"success": True}), 204
 
-from flask_jwt_extended import create_access_token
-from flask_jwt_extended import jwt_required, get_jwt_identity
-@app.route("/token", methods=["POST"])
+@app.route("/api/v1/token", methods=["POST"])
 def create_token():
     username = request.json.get("username", None)
     password = request.json.get("password", None)
-    # Query your database for username and password
-    user = User.query.filter_by(email=username, password=password).first()
+    user = User.query.filter_by(name=username, password=password).first()
+    print(user)
     if user is None:
-        # the user was not found on the database
         return jsonify({"msg": "Bad username or password"}), 401
-    
-    # create a new token with the user id inside
     access_token = create_access_token(identity=user.id)
-    return jsonify({ "token": access_token, "user_id": user.id })
+    return jsonify({"token": access_token, "user_id": user.id})
 
-@app.route("/tasks", methods=["GET"])
+@app.route("/api/v1/tasks", methods=["GET"])
 @jwt_required()
 def get_tasks():
-    user_id = get_jwt_identity()  # Get the user ID from the JWT token
-    tasks = Task.query.filter_by(user_id=user_id).all()
-    return_tasks = []
-    for task in tasks:
-        return_tasks.append(task.serialize())
-    return jsonify(return_tasks)
+    tasks = Task.query.filter_by(user_id=get_jwt_identity()).all()
+    return jsonify([task.serialize() for task in tasks])
 
-@app.route("/tasks/<int:id>", methods=["GET"])
+@app.route("/api/v1/tasks/<int:id>", methods=["GET"])
 @jwt_required()
 def get_task(id):
-    user_id = get_jwt_identity()  # Get the user ID from the JWT token
-    task = Task.query.filter_by(id=id, user_id=user_id).first()
+    task = Task.query.filter_by(id=id, user_id=get_jwt_identity()).first()
     if task is None:
         return jsonify({"error": "Task not found or unauthorized access"}), 404
     return jsonify(task.serialize())
 
-@app.route("/tasks", methods=["POST"])
+@app.route("/api/v1/tasks", methods=["POST"])
 @jwt_required()
 def create_task():
-    print(request.json)
-    user_id = get_jwt_identity() # Get the user ID from the JWT token
     data = request.json
-    task = Task(title=data["title"], status=data["status"], user_id=user_id)
+    task = Task(title=data["title"], status=data["status"], user_id=get_jwt_identity())
     db.session.add(task)
     db.session.commit()
-    
-    # Print the HTTP cookies
-    print(request.cookies)
-    
-    return jsonify(task.serialize())
+    return jsonify(task.serialize()), 201
 
-@app.route("/tasks/<int:id>", methods=["PUT"])
+@app.route("/api/v1/tasks/<int:id>", methods=["PUT"])
 @jwt_required()
 def update_task(id):
-    user_id = get_jwt_identity()  # Get the user ID from the JWT token
-    data = request.json
-    task = Task.query.filter_by(id=id, user_id=user_id).first()
+    task = Task.query.filter_by(id=id, user_id=get_jwt_identity()).first()
     if task is None:
         return jsonify({"error": "Task not found or unauthorized access"}), 404
+    data = request.json
     task.title = data["title"]
     task.status = data["status"]
     db.session.commit()
     return jsonify(task.serialize())
 
-@app.route("/tasks/<int:id>", methods=["DELETE"])
+@app.route("/api/v1/tasks/<int:id>", methods=["DELETE"])
 @jwt_required()
 def delete_task(id):
-    user_id = get_jwt_identity()  # Get the user ID from the JWT token
-    task = Task.query.filter_by(id=id, user_id=user_id).first()
+    task = Task.query.filter_by(id=id, user_id=get_jwt_identity()).first()
     if task is None:
         return jsonify({"error": "Task not found or unauthorized access"}), 404
     db.session.delete(task)
     db.session.commit()
-    return jsonify(task.serialize())
+    return jsonify({"success": 1}), 204
+
+if __name__ == "__main__":
+    app.run(debug=True)
