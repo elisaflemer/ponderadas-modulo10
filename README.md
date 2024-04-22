@@ -11,7 +11,7 @@ A API utiliza JWT (JSON Web Token) para autenticação de usuários. O token é 
 - Registro de usuário (/user-register)
 - Login de usuário (/user-login)
 - Criação de token (/api/v1/token)
-- 
+  
 ### Rotas que exigem autenticação:
 Todas as rotas que gerenciam conteúdos de tarefas e dados de usuário, como /api/v1/users e /api/v1/tasks, requerem um token JWT válido fornecido no cookie de requisição.
 
