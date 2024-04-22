@@ -16,6 +16,7 @@ db.init_app(app)
 app.config["JWT_SECRET_KEY"] = "goku-vs-vegeta" 
 # Seta o local onde o token será armazenado
 app.config['JWT_TOKEN_LOCATION'] = ['cookies']
+app.config['JWT_COOKIE_CSRF_PROTECT'] = False 
 jwt = JWTManager(app)
 import sys
 if len(sys.argv) > 1 and sys.argv[1] == 'create_db':
@@ -40,8 +41,8 @@ def user_login():
 
 @app.route("/login", methods=["POST"])
 def login():
-    username = request.form.get("username", None)
-    password = request.form.get("password", None)
+    username = request.json.get("username", None)
+    password = request.json.get("password", None)
     # Verifica os dados enviados não estão nulos
     if username is None or password is None:
         # the user was not found on the database
@@ -51,8 +52,8 @@ def login():
     if token_data.status_code != 200:
         return render_template("error.html", message="Bad username or password")
     # recupera o token
-    response = make_response(render_template("content.html"))
-    set_access_cookies(response, token_data.json()['token'])
+    response = jsonify({"success": True})
+    set_access_cookies(response, token_data.json()['token'], max_age=60*60*24*7)
     return response
 
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -145,11 +146,16 @@ def get_task(id):
 @app.route("/tasks", methods=["POST"])
 @jwt_required()
 def create_task():
-    user_id = get_jwt_identity()  # Get the user ID from the JWT token
+    print(request.json)
+    user_id = get_jwt_identity() # Get the user ID from the JWT token
     data = request.json
     task = Task(title=data["title"], status=data["status"], user_id=user_id)
     db.session.add(task)
     db.session.commit()
+    
+    # Print the HTTP cookies
+    print(request.cookies)
+    
     return jsonify(task.serialize())
 
 @app.route("/tasks/<int:id>", methods=["PUT"])
