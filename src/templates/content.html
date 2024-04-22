@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        button {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Task Manager</h1>
+
+    <!-- Table to display tasks -->
+    <table>
+        <thead>
+            <tr>
+                <th>Task Name</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="taskList">
+        </tbody>
+    </table>
+
+    <!-- Button to create new task -->
+    <button id="createTaskBtn">Create New Task</button>
+
+    <script>
+        // Function to fetch tasks from the server
+        function fetchTasks() {
+            // Make a request to fetch tasks using JWT in cookies
+            // Replace this with your actual fetch logic using JWT in cookies
+            // Example:
+            // fetch('/api/tasks', {
+            //     method: 'GET',
+            //     headers: {
+            //         'Authorization': 'Bearer ' + getTokenFromCookies()
+            //     }
+            // })
+            // .then(response => response.json())
+            // .then(tasks => {
+            //     // Populate the task list with fetched tasks
+            // })
+            // .catch(error => console.error('Error fetching tasks:', error));
+
+            // For demonstration, generating some sample tasks
+            const tasks = [
+                { name: 'Task 1', status: 'Pending' },
+                { name: 'Task 2', status: 'Completed' },
+                { name: 'Task 3', status: 'Pending' }
+            ];
+
+            // Populate the task list with fetched tasks
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+            tasks.forEach(task => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${task.name}</td>
+                    <td>${task.status}</td>
+                    <td>
+                        <button onclick="updateTask('${task.name}')">Update</button>
+                        <button onclick="deleteTask('${task.name}')">Delete</button>
+                    </td>
+                `;
+                taskList.appendChild(row);
+            });
+        }
+
+        // Function to create a new task
+        function createTask() {
+            // Logic to create a new task
+            // You can add your code to open a modal or navigate to a new page for creating a task
+            console.log('Creating new task...');
+        }
+
+        // Function to update a task
+        function updateTask(taskName) {
+            // Logic to update the specified task
+            console.log('Updating task:', taskName);
+        }
+
+        // Function to delete a task
+        function deleteTask(taskName) {
+            // Logic to delete the specified task
+            console.log('Deleting task:', taskName);
+        }
+
+        // Fetch tasks when the page loads
+        window.onload = fetchTasks;
+
+        // Add event listener for create task button
+        document.getElementById('createTaskBtn').addEventListener('click', createTask);
+    </script>
+</body>
+</html>
