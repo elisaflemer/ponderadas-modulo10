@@ -12,7 +12,7 @@ app = Flask(__name__, template_folder="templates")
 CORS(app)
 
 # Database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:postgres@localhost:5432/todo"
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', "postgresql://postgres:postgres@localhost:5432/todo")
 db.init_app(app)
 
 # JWT configuration

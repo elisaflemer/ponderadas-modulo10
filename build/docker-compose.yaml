@@ -13,5 +13,17 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
 
+  app:
+    build: ../.
+    restart: always
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    environment:
+      FLASK_APP: src.main
+      FLASK_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/todo
+
 volumes:
   db_data:

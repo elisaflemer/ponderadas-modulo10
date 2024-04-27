@@ -23,6 +23,12 @@ Todas as rotas que gerenciam conteúdos de tarefas e dados de usuário, como /ap
 4. Para criar as tabelas, volte à pasta raiz e execute `python src/main.py create_db`
 5. Por fim, para rodar a API, execute `python -m flask --app src.main run`
 
+## Checkpoint 2
+
+O servidor síncrono foi Dockerizado em duas imagens: uma para o Flask e uma para o banco em Postgres. A imagem do Flask roda um entrypoint em bash que cria o banco e então inicia o servidor. Isso só é feito após lançar o container de banco.
+
+O docker-compose lança ambos os containers e seta as variáveis de ambiente necessárias. Esse arquivo se encontra na pasta `build`. Já o Dockerfile está na pasta raiz.
+
 ## Demo
 
 https://github.com/elisaflemer/ponderadas-modulo10/assets/99259251/33079ba3-e998-4dd5-843e-a45a1fdaf1ee
