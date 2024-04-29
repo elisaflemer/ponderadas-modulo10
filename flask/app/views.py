@@ -34,12 +34,6 @@ def login():
         return response
     return jsonify({'login': False}), 401
 
-@api_bp.route('/logout', methods=['POST'])
-def logout():
-    response = jsonify({'logout': True})
-    unset_jwt_cookies(response)
-    return response
-
 @api_bp.route('/tasks', methods=['GET', 'POST'])
 @jwt_required()
 def tasks():
@@ -54,21 +48,6 @@ def tasks():
         tasks = Task.query.filter_by(user_id=user_id).all()
         return jsonify({'tasks': [{'id': task.id, 'title': task.title, 'completed': task.completed} for task in tasks]})
     
-@api_bp.route('/tasks/<int:id>', methods=['PUT', 'DELETE'])
-@jwt_required()
-def task(id):
-    user_id = get_jwt_identity()
-    task = Task.query.filter_by(id=id, user_id=user_id).first()
-    if not task:
-        return jsonify({'message': 'Task not found'}), 404
-    if request.method == 'PUT':
-        task.completed = not task.completed
-        db.session.commit()
-        return jsonify({'message': 'Task updated successfully.'})
-    else:
-        db.session.delete(task)
-        db.session.commit()
-        return jsonify({'message': 'Task deleted successfully.'})
 
 @api_bp.route('/tasks/<int:id>/complete', methods=['PUT'])
 @jwt_required()
@@ -81,15 +60,26 @@ def complete_task(id):
     db.session.commit()
     return jsonify({'message': 'Task completed successfully.'})
 
-@api_bp.route('/tasks/<int:id>/incomplete', methods=['PUT'])
+@api_bp.route('/tasks/<int:id>', methods=['DELETE']) 
 @jwt_required()
-def incomplete_task(id):
+def delete_task(id):
     user_id = get_jwt_identity()
     task = Task.query.filter_by(id=id, user_id=user_id).first()
     if not task:
         return jsonify({'message': 'Task not found'}), 404
-    task.completed = False
+    db.session.delete(task)
     db.session.commit()
-    return jsonify({'message': 'Task marked as incomplete successfully.'})
+    return jsonify({'message': 'Task deleted successfully.'})
 
+@api_bp.route('/tasks/<int:id>', methods=['PUT'])
+@jwt_required()
+def update_task(id):
+    user_id = get_jwt_identity()
+    task = Task.query.filter_by(id=id, user_id=user_id).first()
+    if not task:
+        return jsonify({'message': 'Task not found'}), 404
+    title = request.json.get('title')
+    task.title = title
+    db.session.commit()
+    return jsonify({'message': 'Task updated successfully.'})
 

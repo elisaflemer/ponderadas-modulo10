@@ -39,7 +39,9 @@ async def login_for_access_token(request: Request, db: AsyncSession = Depends(da
 
 @app.post("/api/v1/register", response_model=UserCreate)
 async def register_user(request: Request, db: AsyncSession = Depends(database.get_db)):
+    print('hi')
     user_data = await request.json()
+    print(user_data)
     user = models.User(username=user_data["username"], password=user_data["password"])
     async with db as session:
         session.add(user)
