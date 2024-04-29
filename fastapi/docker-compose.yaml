@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  db-fastapi:
+    image: postgres:latest
+    restart: always
+    user: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: todo_db_fastapi
+      PGUSER: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_fastapi_data:/var/lib/postgresql/data
+    healthcheck:
+      #CHANGE 1: this command checks if the database is ready, right on the source db server
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+
+  fastapi:
+    build: .
+    restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      #CHANGE 2: it prevents issuing a request while the server is starting to depend on the healthy status of postgres-db 
+      db-fastapi:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db-fastapi:5432/todo_db_fastapi
+
+volumes:
+  db_fastapi_data:
