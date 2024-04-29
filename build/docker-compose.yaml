@@ -20,6 +20,8 @@ services:
       - "5000:5000"
     depends_on:
       - db
+    volumes:
+     - .:/app
     environment:
       FLASK_APP: src.main
       FLASK_ENV: development

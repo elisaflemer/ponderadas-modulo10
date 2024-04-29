@@ -13,6 +13,7 @@ CORS(app)
 
 # Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', "postgresql://postgres:postgres@localhost:5432/todo")
+print(app.config['SQLALCHEMY_DATABASE_URI'])
 db.init_app(app)
 
 # JWT configuration
@@ -170,4 +171,4 @@ def delete_task(id):
     return jsonify({"success": 1}), 204
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000) 
