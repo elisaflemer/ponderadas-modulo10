@@ -40,3 +40,4 @@ Server 2 (Async) is faster.
 
 ## Demo
 
+[Screencast from 2024-04-29 10-15-41.webm](https://github.com/elisaflemer/ponderadas-modulo10/assets/99259251/83d687f1-99a3-4c08-af8f-d6d9269aa328)
