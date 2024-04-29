@@ -14,7 +14,6 @@ async def make_requests(session, base_url, counter):
     register_url = f"{base_url}/api/v1/register"
     user = generate_random_string(8)
     password = generate_random_string(8)
-    print(user, password)
     async with session.post(register_url, json={"username": user, "password": password}) as response:
         await response.read()
 
@@ -45,7 +44,7 @@ async def run_sequence(url, n_groups):
 async def main():
     URL1 = "http://localhost:3000"
     URL2 = "http://localhost:8000"
-    N_GROUPS = 4
+    N_GROUPS = 5
 
 
     print("Starting the requests...")
