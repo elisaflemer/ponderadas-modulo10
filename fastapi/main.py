@@ -52,22 +52,19 @@ async def register_user(request: Request, db: AsyncSession = Depends(database.ge
 async def login(request: Request, db: AsyncSession = Depends(database.get_db)):
     form_data = await request.json()
     user = await auth.authenticate_user(form_data["username"], form_data["password"], db)
-    print(user)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    print('here')
-    print(user.id)
     access_token = auth.create_access_token(user.id)
     response = JSONResponse(content={"message": "User logged in successfully"})
     response.set_cookie(key="jwt_token", value=access_token)
     return response
 
 
-@app.get("/api/v1/tasks/")
+@app.get("/api/v1/tasks")
 async def read_tasks(request: Request, skip: int = 0, limit: int = 100, db: AsyncSession = Depends(database.get_db)):
     # Retrieve JWT token from cookies
     token = request.cookies.get("jwt_token")
@@ -85,12 +82,12 @@ async def read_tasks(request: Request, skip: int = 0, limit: int = 100, db: Asyn
         tasks = result.scalars().all()
 
     # Assuming you have a Pydantic model for Task to serialize the database models
-    tasks_data = [task.dict() for task in tasks]  # Replace this line with the appropriate serialization if needed
+    tasks_data = [{"id": task.id, "title": task.title, "completed": task.completed, "owner_id": task.owner_id} for task in tasks]
 
     # Return the serialized tasks as JSON
     return JSONResponse(content={"tasks": tasks_data})
 
-@app.post("/api/v1/tasks/")
+@app.post("/api/v1/tasks")
 async def create_task(request: Request, task: TaskCreate, db: AsyncSession = Depends(database.get_db)):
     print(request.cookies)
     # Retrieve JWT token from cookies
@@ -105,6 +102,8 @@ async def create_task(request: Request, task: TaskCreate, db: AsyncSession = Dep
 
     # Create new task instance with user ID from the authenticated user
     new_task = Task(title=task.title, owner_id=user.id)  # Assuming user object has 'id'
+
+    print(new_task)
 
     # Add new task to the database
     async with db:

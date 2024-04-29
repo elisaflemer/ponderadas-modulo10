@@ -39,3 +39,4 @@ Server 2 (Async) is faster.
 2. Execute o seguinte comando: `python3 performance_test.py`
 
 ## Demo
+
