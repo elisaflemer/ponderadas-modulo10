@@ -44,7 +44,7 @@ async def run_sequence(url, n_groups):
 async def main():
     URL1 = "http://localhost:3000"
     URL2 = "http://localhost:8000"
-    N_GROUPS = 5
+    N_GROUPS = 4
 
 
     print("Starting the requests...")
