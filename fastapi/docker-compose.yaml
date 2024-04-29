@@ -26,13 +26,13 @@ services:
     build: .
     restart: always
     ports:
-      - "5000:5000"
+      - "8000:8000"
     depends_on:
       #CHANGE 2: it prevents issuing a request while the server is starting to depend on the healthy status of postgres-db 
       db-fastapi:
         condition: service_healthy
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db-fastapi:5433/todo_db_fastapi
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db-fastapi:5432/todo_db_fastapi
 
 volumes:
   db_fastapi_data:

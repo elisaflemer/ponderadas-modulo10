@@ -5,6 +5,7 @@ from . import db
 
 api_bp = Blueprint('api', __name__)
 
+
 @api_bp.route('/', methods=['GET'])
 def hello():
     return jsonify({'message': 'Hello, World!'})
@@ -52,3 +53,43 @@ def tasks():
     else:
         tasks = Task.query.filter_by(user_id=user_id).all()
         return jsonify({'tasks': [{'id': task.id, 'title': task.title, 'completed': task.completed} for task in tasks]})
+    
+@api_bp.route('/tasks/<int:id>', methods=['PUT', 'DELETE'])
+@jwt_required()
+def task(id):
+    user_id = get_jwt_identity()
+    task = Task.query.filter_by(id=id, user_id=user_id).first()
+    if not task:
+        return jsonify({'message': 'Task not found'}), 404
+    if request.method == 'PUT':
+        task.completed = not task.completed
+        db.session.commit()
+        return jsonify({'message': 'Task updated successfully.'})
+    else:
+        db.session.delete(task)
+        db.session.commit()
+        return jsonify({'message': 'Task deleted successfully.'})
+
+@api_bp.route('/tasks/<int:id>/complete', methods=['PUT'])
+@jwt_required()
+def complete_task(id):
+    user_id = get_jwt_identity()
+    task = Task.query.filter_by(id=id, user_id=user_id).first()
+    if not task:
+        return jsonify({'message': 'Task not found'}), 404
+    task.completed = True
+    db.session.commit()
+    return jsonify({'message': 'Task completed successfully.'})
+
+@api_bp.route('/tasks/<int:id>/incomplete', methods=['PUT'])
+@jwt_required()
+def incomplete_task(id):
+    user_id = get_jwt_identity()
+    task = Task.query.filter_by(id=id, user_id=user_id).first()
+    if not task:
+        return jsonify({'message': 'Task not found'}), 404
+    task.completed = False
+    db.session.commit()
+    return jsonify({'message': 'Task marked as incomplete successfully.'})
+
+

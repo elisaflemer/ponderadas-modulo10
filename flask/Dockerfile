@@ -10,9 +10,11 @@ COPY requirements.txt .
 # Install the required dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+EXPOSE 5000
+
 # Copy the content of the local src directory to the working directory
 COPY . .
 
 RUN chmod +x entrypoint.sh
 # Set the entrypoint command to run the main file
-CMD ["python", "run.py", "create_db"]
+CMD ["./entrypoint.sh"]

@@ -29,6 +29,6 @@ def create_app():
 
     from .views import api_bp
     print('hi, this is the uri:', Config.SQLALCHEMY_DATABASE_URI)
-    app.register_blueprint(api_bp)
+    app.register_blueprint(api_bp, url_prefix='/api/v1')
 
     return app
