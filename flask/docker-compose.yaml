@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  db-flask:
+    image: postgres:latest
+    restart: always
+    user: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: todo_db_flask
+      PGUSER: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_flask_data:/var/lib/postgresql/data
+    healthcheck:
+      #CHANGE 1: this command checks if the database is ready, right on the source db server
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+
+  flask:
+    build: .
+    restart: always
+    ports:
+      - "5000:5000"
+    depends_on:
+      #CHANGE 2: it prevents issuing a request while the server is starting to depend on the healthy status of postgres-db 
+      db-flask:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db-flask:5432/todo_db_flask
+
+volumes:
+  db_flask_data:
