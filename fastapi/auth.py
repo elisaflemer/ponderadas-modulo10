@@ -12,13 +12,13 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")  # Define the OAuth2 instance at the module level
-
-def create_access_token(user_id: str):
-    to_encode = {"sub": user_id}  # 'sub' is a standard claim for the subject (user identifier)
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+def create_access_token(user_id):
+    print(user_id)
+    claims = {
+        "sub": str(user_id),  # Ensure the user ID is converted to string
+        "exp": datetime.utcnow() + timedelta(minutes=30)
+    }
+    return jwt.encode(claims, SECRET_KEY, algorithm=ALGORITHM)
 
 async def authenticate_user(username: str, password: str, db):
     async with db as session:
@@ -33,21 +33,21 @@ async def authenticate_user(username: str, password: str, db):
 
 async def get_current_user(token: str, db) -> models.User:
     print(token)
-    try:
+
         # Decode the JWT
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        print(payload)
-        user_id: str = payload.get("sub")  # 'sub' is usually used to store the user identifier
-        if user_id is None:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid JWT token")
-
-        # Fetch the user from the database
-        async with db as session:
-            result = await session.execute(select(models.User).where(models.User.id == user_id))
-            user = result.scalars().first()
-            if user is None:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-            return user
-
-    except JWTError:
+    print('i will decode')
+    payload = jwt.decode(token=token, key=SECRET_KEY, algorithms=ALGORITHM)
+    print('i have decoded', payload)
+    user_id: str = payload.get("sub")  # 'sub' is usually used to store the user identifier
+    user_id = int(user_id)  # Ensure the user ID is converted to an integer
+    if user_id is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid JWT token")
+
+    # Fetch the user from the database
+    async with db as session:
+        result = await session.execute(select(models.User).where(models.User.id == user_id))
+        user = result.scalars().first()
+        if user is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        return user
+

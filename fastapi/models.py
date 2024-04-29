@@ -13,6 +13,10 @@ class User(Base):
     username = Column(String, unique=True, index=True)
     password = Column(String)
 
+    tasks = relationship("Task", back_populates="owner")
+    def __repr__(self):
+        return f"User(user_id={self.id!r}, username={self.username!r}, email={self.password!r})"
+
 class Task(Base):
     __tablename__ = "tasks"
     id = Column(Integer, primary_key=True, index=True)

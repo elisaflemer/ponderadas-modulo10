@@ -1,31 +1,31 @@
 import asyncio
 import aiohttp
 import time
+import random
+import string
+
+def generate_random_string(length):
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for _ in range(length))
 
 async def make_requests(session, base_url):
     # Register
     register_url = f"{base_url}/api/v1/register"
-
-    import random
-    import string
-
-    def generate_random_string(length):
-        letters = string.ascii_lowercase
-        return ''.join(random.choice(letters) for _ in range(length))
-
     user = generate_random_string(8)
     password = generate_random_string(8)
+
     async with session.post(register_url, json={"user": user, "password": password}) as response:
         await response.read()
 
     # Login and save JWT
     login_url = f"{base_url}/api/v1/login"
     async with session.post(login_url, json={"user": user, "password": password}) as response:
-        await response.read()
+        jwt = (await response.json())['token']
 
     # Create a task using the JWT from login
     task_url = f"{base_url}/api/v1/tasks"
-    async with session.post(task_url, json={"task": "Do something"}) as response:
+    headers = {'Authorization': f'Bearer {jwt}'}
+    async with session.post(task_url, json={"task": "Do something"}, headers=headers) as response:
         await response.read()
 
 async def run_sequence(url, n_groups):
@@ -49,12 +49,12 @@ if __name__ == "__main__":
 
     total_duration = time.time() - start_time
     print(f"Total time for all request groups: {total_duration:.2f} seconds")
-    print(f"Average time per group for Sync server: {average_time1:.4f} seconds")
-    print(f"Average time per group for Async Server: {average_time2:.4f} seconds")
+    print(f"Average time per group for Server 1: {average_time1:.4f} seconds")
+    print(f"Average time per group for Server 2: {average_time2:.4f} seconds")
 
     if average_time1 < average_time2:
-        print("Sync server is faster.")
+        print("Server 1 is faster.")
     elif average_time1 > average_time2:
-        print("Async server is faster.")
+        print("Server 2 is faster.")
     else:
         print("Both servers have the same average response time per group.")

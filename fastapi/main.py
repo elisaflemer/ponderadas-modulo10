@@ -3,6 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import delete
 from models import User, Task
 import models
 import database
@@ -18,7 +19,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 class TaskCreate(BaseModel):
     title: str
-    description: str
 
 class UserCreate(BaseModel):
     username: str
@@ -58,15 +58,12 @@ async def login(request: Request, db: AsyncSession = Depends(database.get_db)):
             headers={"WWW-Authenticate": "Bearer"},
         )
     print('here')
-    print(dict(user))
+    print(user.id)
     access_token = auth.create_access_token(user.id)
     response = JSONResponse(content={"message": "User logged in successfully"})
     response.set_cookie(key="jwt_token", value=access_token)
     return response
 
-@app.on_event("startup")
-async def startup_event():
-    await models.create_tables()
 
 @app.get("/api/v1/tasks/")
 async def read_tasks(request: Request, skip: int = 0, limit: int = 100, db: AsyncSession = Depends(database.get_db)):
@@ -82,7 +79,7 @@ async def read_tasks(request: Request, skip: int = 0, limit: int = 100, db: Asyn
 
     async with db:
         # Execute query to fetch tasks owned by the user
-        result = await db.execute(select(Task).where(Task.user_id == user.id).offset(skip).limit(limit))
+        result = await db.execute(select(Task).where(Task.owner_id == user.id).offset(skip).limit(limit))
         tasks = result.scalars().all()
 
     # Assuming you have a Pydantic model for Task to serialize the database models
@@ -100,12 +97,12 @@ async def create_task(request: Request, task: TaskCreate, db: AsyncSession = Dep
         raise HTTPException(status_code=401, detail="No JWT token found in cookies")
 
     # Authenticate user and get user_id
-    user = await auth.get_current_user(token)
+    user = await auth.get_current_user(token, db)
     if not user:
         raise HTTPException(status_code=401, detail="User authentication failed")
 
     # Create new task instance with user ID from the authenticated user
-    new_task = Task(title=task.title, user_id=user.id)  # Assuming user object has 'id'
+    new_task = Task(title=task.title, owner_id=user.id)  # Assuming user object has 'id'
 
     # Add new task to the database
     async with db:
@@ -116,76 +113,66 @@ async def create_task(request: Request, task: TaskCreate, db: AsyncSession = Dep
     # Return the created task as JSON
     return {"id": new_task.id, "title": new_task.title, "completed": new_task.completed, "owner_id": new_task.owner_id}
 
-@app.put("/api/v1/tasks/{task_id}")
-async def update_task(task_id: int, task: TaskCreate, request: Request, db: AsyncSession = Depends(database.get_db)):
+@app.delete("/api/v1/tasks/{task_id}")
+async def delete_task(task_id: int, request: Request, db: AsyncSession = Depends(database.get_db)):
+    # Retrieve JWT token from cookies
     token = request.cookies.get("jwt_token")
-    user = await auth.get_current_user(token)  # Ensure this is an async call
+    if not token:
+        raise HTTPException(status_code=401, detail="Authentication credentials were not provided.")
+
+    # Authenticate user and get user object
+    user = await auth.get_current_user(token, db)
     if not user:
-        raise HTTPException(status_code=401, detail="User authentication failed")
+        raise HTTPException(status_code=401, detail="User could not be authenticated.")
 
     async with db:
-        # Ensure to check ownership by user_id which is obtained from 'user' object
-        result = await db.execute(Task.update().where(
-            Task.id == task_id,
-            Task.user_id == user.id  # Assuming user object has an 'id' attribute
-        ).values(title=task.title, description=task.description))
+        # Attempt to delete the task
+        result = await db.execute(delete(models.Task).where(
+            models.Task.id == task_id, 
+            models.Task.owner_id == user.id
+        ))
         await db.commit()
 
+        # Check if any row was affected
         if result.rowcount == 0:
-            raise HTTPException(status_code=404, detail="Task not found or not owned by user")
-        return {"message": "Task updated successfully"}
-
-@app.delete("/api/v1/tasks/{task_id}")
-async def delete_task(task_id: int, db: AsyncSession = Depends(database.get_db), token: str = Depends(oauth2_scheme)):
-    user_id = auth.get_current_user(token)
-    async with db as session:
-        result = await session.execute(models.Task.delete().where(models.Task.id == task_id, models.Task.user_id == user_id))
-        await session.commit()
-        if result.rowcount == 0:
-            raise HTTPException(status_code=404, detail="Task not found")
+            raise HTTPException(status_code=404, detail="Task not found or not owned by the user")
+        
         return {"message": "Task deleted successfully"}
+    
+@app.put("/api/v1/task/{task_id}/complete")
+async def complete_task(task_id: int, request: Request, db: AsyncSession = Depends(database.get_db)):
+    # Retrieve JWT token from cookies
+    token = request.cookies.get("jwt_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Authentication credentials were not provided.")
+
+    # Authenticate user and get user object
+    user = await auth.get_current_user(token, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="User could not be authenticated.")
+    print(task_id, user.id)
+    async with db:
+        # Fetch the task owned by the user
+        result = await db.execute(select(models.Task).where(
+            models.Task.id == task_id, 
+            models.Task.owner_id == user.id
+        ))
+        task = result.scalars().first()
+        
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found or not owned by the user")
+        
+        # Update task as completed
+        task.completed = True
+        await db.commit()
+
+        return {"message": "Task completed successfully"}
+    
 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
-
-@app.get("/api/v1/tasks/")
-async def read_tasks(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(database.get_db)):
-    async with db as session:
-        result = await session.execute(models.Task.select().offset(skip).limit(limit))
-        tasks = result.scalars().all()
-        return tasks
-
-@app.post("/api/v1/tasks/")
-async def create_task(task: TaskCreate, db: AsyncSession = Depends(database.get_db)):
-    new_task = models.Task(title=task.title, description=task.description)
-    async with db as session:
-        session.add(new_task)
-        await session.commit()
-        return new_task
-
-@app.put("/api/v1/tasks/{task_id}")
-async def update_task(task_id: int, task: TaskCreate, db: AsyncSession = Depends(database.get_db)):
-    async with db as session:
-        result = await session.execute(models.Task.update().where(models.Task.id == task_id).values(title=task.title, description=task.description))
-        await session.commit()
-        if result.rowcount == 0:
-            raise HTTPException(status_code=404, detail="Task not found")
-        return {"message": "Task updated successfully"}
-    
-@app.delete("/api/v1/tasks/{task_id}")
-async def delete_task(task_id: int, db: AsyncSession = Depends(database.get_db)):
-    async with db as session:
-        result = await session.execute(models.Task.delete().where(models.Task.id == task_id))
-        await session.commit()
-        if result.rowcount == 0:
-            raise HTTPException(status_code=404, detail="Task not found")
-        return {"message": "Task deleted successfully"}
 
 @app.on_event("startup")
 async def startup_event():
     await models.create_tables()
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
