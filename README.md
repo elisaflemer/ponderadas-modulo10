@@ -1,35 +1,41 @@
 # Documentação da API Todo
 
-A API Todo é um serviço RESTful projetado para gerenciamento de tarefas. Este serviço é construído com Flask e integra autenticação de usuário, gerenciamento de tarefas e tratamento de erros. Ele foi testado com o Insomnia para testes e interações da API.
+O projeto descrito inclui dois servidores para gerenciamento de tarefas, um síncrono utilizando Flask e outro assíncrono com FastAPI, cada um operando em seu próprio ambiente Dockerizado com uma instância separada do Postgres. Ambos servidores oferecem funcionalidades para registro e login de usuários via JWT armazenados em cookies, além de permitir a criação, atualização e exclusão de tarefas.
 
-Esta API adere ao Nível 2 do Modelo de Maturidade Richardson. Ela aproveita os verbos HTTP de maneira apropriada e emprega cabeçalhos e códigos de resposta HTTP de forma eficaz.
+## Teste de Escalabilidade
 
-A API utiliza JWT (JSON Web Token) para autenticação de usuários. O token é armazenado em cookies e usado para autenticar as requisições à API.
+O teste de escalabilidade, descrito no código Python com asyncio e aiohttp, é um experimento para comparar o desempenho dos dois servidores em condições de carga simultânea. O código gera uma série de solicitações HTTP para cada servidor, executando operações de cadastro, login e criação de tarefas. O objetivo é medir e comparar o tempo médio de resposta para grupos de solicitações enviadas aos dois servidores. O teste inclui:
 
-## Acesso às Rotas
-### Rotas abertas:
-- Registro de usuário (/user-register)
-- Login de usuário (/user-login)
-- Criação de token (/api/v1/token)
+- Registro de usuário com nome e senha gerados aleatoriamente.
+- Login do usuário para obter um JWT.
+- Criação de uma tarefa usando o JWT.
+- Os tempos médios por grupo para cada servidor são calculados e comparados para determinar qual servidor responde mais rapidamente sob carga.
   
-### Rotas que exigem autenticação:
-Todas as rotas que gerenciam conteúdos de tarefas e dados de usuário, como /api/v1/users e /api/v1/tasks, requerem um token JWT válido fornecido no cookie de requisição.
+### Resultado
+
+```
+Starting the requests...
+Total time for all request groups: 12.28 seconds
+Average time per group for Server 1: 3.0701 seconds
+Average time per group for Server 2: 2.5598 seconds
+Server 2 (Async) is faster.
+```
 
 ## Como executar
 
-1. Clone este repositório
-2. Na pasta raiz, execute `pip install -r requirements.txt` para instalar as dependências
-3. Na pasta `build`, inicie o banco de dados com o comando `docker compose up`
-4. Para criar as tabelas, volte à pasta raiz e execute `python src/main.py create_db`
-5. Por fim, para rodar a API, execute `python -m flask --app src.main run`
+### FastAPI
 
-## Checkpoint 2
+1. Entre na pasta `fastapi`
+2. Execute o seguinte comando: `docker compose up`
+   
+### Flask
 
-O servidor síncrono foi Dockerizado em duas imagens: uma para o Flask e uma para o banco em Postgres. A imagem do Flask roda um entrypoint em bash que cria o banco e então inicia o servidor. Isso só é feito após lançar o container de banco.
+1. Entre na pasta `flask`
+2. Execute o seguinte comando: `docker compose up`
 
-O docker-compose lança ambos os containers e seta as variáveis de ambiente necessárias. Esse arquivo se encontra na pasta `build`. Já o Dockerfile está na pasta raiz.
+### Teste de escalabilidade
+
+1. Volte para a pasta raiz
+2. Execute o seguinte comando: `python3 performance_test.py`
 
 ## Demo
-
-https://github.com/elisaflemer/ponderadas-modulo10/assets/99259251/33079ba3-e998-4dd5-843e-a45a1fdaf1ee
-
