@@ -2,6 +2,13 @@
 
 O projeto descrito inclui dois servidores para gerenciamento de tarefas, um síncrono utilizando Flask e outro assíncrono com FastAPI, cada um operando em seu próprio ambiente Dockerizado com uma instância separada do Postgres. Ambos servidores oferecem funcionalidades para registro e login de usuários via JWT armazenados em cookies, além de permitir a criação, atualização e exclusão de tarefas.
 
+## Checkpoint 2
+
+Para este checkpoint, foi criado o primeiro rascunho de interface mobile utilizando Flutter, na pasta `mobile/flutter`. O aplicativo já pode ser executado no emulador. Um vídeo demonstrando isso está disponível abaixo.]
+
+[Screencast from 05-05-2024 23:06:32.webm](https://github.com/elisaflemer/ponderadas-modulo10/assets/99259251/42914c75-58f3-4f58-b6ca-4c1fc8ef1833)
+
+
 ## Teste de Escalabilidade
 
 O teste de escalabilidade, descrito no código Python com asyncio e aiohttp, é um experimento para comparar o desempenho dos dois servidores em condições de carga simultânea. O código gera uma série de solicitações HTTP para cada servidor, executando operações de cadastro, login e criação de tarefas. O objetivo é medir e comparar o tempo médio de resposta para grupos de solicitações enviadas aos dois servidores. O teste inclui:
