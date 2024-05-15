@@ -18,9 +18,11 @@ class _TodoListScreenState extends State<TodoListScreen> {
   }
 
   Future<void> fetchTasks() async {
-    final response = await http.get(Uri.parse('http://localhost:8000/api/v1/tasks'));
+    print('fetchTasks');
+    final response = await http.get(Uri.parse('http://187.180.189.147:8000/api/v1/tasks'));
 
     if (response.statusCode == 200) {
+      json.decode(response.body);
       setState(() {
         tasks = json.decode(response.body);
       });
@@ -31,7 +33,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
 
   Future<void> _addTask() async {
     final response = await http.post(
-      Uri.parse('http://localhost:8000/api/v1/tasks'),
+      Uri.parse('http://187.180.189.147:8000/api/v1/tasks'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({'title': 'New Task'}),
     );
@@ -48,7 +50,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
   Future<void> _editTask(int index, String newTitle) async {
     final task = tasks[index];
     final response = await http.put(
-      Uri.parse('http://localhost:8000/api/v1/tasks/${task['id']}'),
+      Uri.parse('http://187.180.189.147:8000/api/v1/tasks/${task['id']}'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({'title': newTitle}),
     );
@@ -65,7 +67,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
   Future<void> _deleteTask(int index) async {
     final task = tasks[index];
     final response = await http.delete(
-      Uri.parse('http://localhost:8000/api/v1/tasks/${task['id']}'),
+      Uri.parse('http://187.180.189.147:8000/api/v1/tasks/${task['id']}'),
     );
 
     if (response.statusCode == 200) {

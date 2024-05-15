@@ -4,10 +4,9 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import delete
-from models import User, Task
+from models import Task
 import models
 import database
-import auth
 from pydantic import BaseModel
 from fastapi import Request
 from fastapi import Response
@@ -27,7 +26,7 @@ async def read_tasks(request: Request, skip: int = 0, limit: int = 100, db: Asyn
         tasks = result.scalars().all()
 
     # Assuming you have a Pydantic model for Task to serialize the database models
-    tasks_data = [{"id": task.id, "title": task.title, "completed": task.completed} for task in tasks]
+    tasks_data = [{"id": task.id, "title": task.title} for task in tasks]
 
     # Return the serialized tasks as JSON
     return JSONResponse(content={"tasks": tasks_data})
@@ -47,7 +46,7 @@ async def create_task(request: Request, task: TaskCreate, db: AsyncSession = Dep
         await db.refresh(new_task)  # Refresh to get the new task with ID populated from the database
 
     # Return the created task as JSON
-    return {"id": new_task.id, "title": new_task.title, "completed": new_task.completed}
+    return {"id": new_task.id, "title": new_task.title}
 
 @app.delete("/api/v1/tasks/{task_id}")
 async def delete_task(task_id: int, request: Request, db: AsyncSession = Depends(database.get_db)):
@@ -82,7 +81,7 @@ async def update_task(task_id: int, task: TaskCreate, request: Request, db: Asyn
         await db.commit()
 
         # Return the updated task as JSON
-        return {"id": task.id, "title": task.title, "completed": task.completed}
+        return {"id": task.id, "title": task.title}
     
     
 if __name__ == "__main__":
