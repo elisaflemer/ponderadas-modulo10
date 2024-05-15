@@ -1,13 +1,28 @@
 # Documentação da API Todo
 
-O projeto descrito inclui dois servidores para gerenciamento de tarefas, um síncrono utilizando Flask e outro assíncrono com FastAPI, cada um operando em seu próprio ambiente Dockerizado com uma instância separada do Postgres. Ambos servidores oferecem funcionalidades para registro e login de usuários via JWT armazenados em cookies, além de permitir a criação, atualização e exclusão de tarefas.
+Esta ponderada consistia em criar um aplicativo de lista de tarefas com backend dockerizado e uma interface mobile feita com Flutter para Android. A API seguiu os padrões de maturidade de Richardson, foi desenvolvida com FASTAPI e está assíncrona. Por ora, a única função dessa API é gerenciar uma tabela de tasks. A arquitetura não seguiu nenhum padrão específico devido à simplicidade do sistema, mas, em iterações posteriores, se recomendaria implementar uma organização MVC. O código-fonte está disponível na pasta `fastapi` e é executável via docker-compose. 
 
-## Checkpoint 2
+Já a interface está disponível no caminho `mobile/todoapp`. Ela possui duas telas: uma de boas-vindas e uma com a lista de afazeres. Essa lista busca as tarefas da API e permite que, ao clicar em qualquer uma delas, seja possível editá-las ou deletá-las. Também existe um botão flutuante para que se possa adicionar tarefas novas. Tudo isso tem como entrypoint of arquivo main.dart.
 
-Para este checkpoint, foi criado o primeiro rascunho de interface mobile utilizando Flutter, na pasta `mobile/flutter`. O aplicativo já pode ser executado no emulador. Um vídeo demonstrando isso está disponível abaixo.]
+## Demo
 
 [Screencast from 05-05-2024 23:06:32.webm](https://github.com/elisaflemer/ponderadas-modulo10/assets/99259251/42914c75-58f3-4f58-b6ca-4c1fc8ef1833)
 
+## Como executar
+
+### FastAPI
+
+1. Entre na pasta `fastapi`
+2. Execute o seguinte comando: `docker compose up`
+   
+### Flutter
+
+1. Entre na pasta `mobile/todoapp/lib`,
+2. Certifique-se de ter o Android Studio instalado com um emulador configurado para Android.
+3. Execute o arquivo `main.dart` no emulador.
+
+================================================================================================================================================
+# Ponderadas anteriores 
 
 ## Teste de Escalabilidade
 
