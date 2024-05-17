@@ -25,7 +25,7 @@ async def create_task(session, title: str, user_id: int):
     return {'id': task.id, 'title': task.title, 'status': task.status, 'created_at': task.created_at.isoformat() if task.created_at else None, 'updated_at': task.updated_at.isoformat() if task.updated_at else None}
 
 async def update_task(session, task_id: int, title: str, user_id: int):
-    stmt = select(Task).filter(Task.id == task_id and Task.user_id == user_id).options(selectinload(Task.user))
+    stmt = select(Task).filter((Task.id == task_id) & (Task.user_id == user_id))
     result = await session.execute(stmt)
     task = result.scalar()
     if not task:
@@ -35,12 +35,12 @@ async def update_task(session, task_id: int, title: str, user_id: int):
     return task.to_dict()
 
 async def delete_task(session, task_id: int, user_id: int):
-    stmt = select(Task).filter(Task.id == task_id and Task.user_id == user_id). options(selectinload(Task.user))
+    stmt = select(Task).filter((Task.id == task_id) & (Task.user_id == user_id)).options(selectinload(Task.user))
     result = await session.execute(stmt)
     task = result.scalar()
     if not task:
         return None
-    session.delete(task)
+    await session.delete(task)
     await session.commit()
     return task.to_dict()
 

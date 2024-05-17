@@ -5,7 +5,7 @@ class TaskTile extends StatefulWidget {
   final Function(String) onEdit;
   final Function onDelete;
 
-  TaskTile({required this.task, required this.onEdit, required this.onDelete});
+  TaskTile({required this.task, required this.onEdit, required this.onDelete, Key? key}) : super(key: key);
 
   @override
   _TaskTileState createState() => _TaskTileState();

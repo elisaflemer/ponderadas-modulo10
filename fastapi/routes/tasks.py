@@ -20,19 +20,19 @@ async def get_task(task_id: int, session: AsyncSession = Depends(get_session), u
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
     return task
 
-@router.post("/")
+@router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_new_task(request: TaskRequest, session: AsyncSession = Depends(get_session), user = Depends(get_current_user)):
     task = await create_task(session, request.title, user['id'])
     return task
 
-@router.put("/{task_id}")
-async def update_existing_task(task_id: int, title: str, session: AsyncSession = Depends(get_session), user = Depends(get_current_user)):
-    task = await update_task(session, task_id, title, user['id'])
+@router.put("/{task_id}", status_code=status.HTTP_200_OK)
+async def update_existing_task(task_id: int, request: TaskRequest, session: AsyncSession = Depends(get_session), user = Depends(get_current_user)):
+    task = await update_task(session, task_id, request.title, user['id'])
     if not task:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
     return task
 
-@router.delete("/{task_id}")
+@router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_existing_task(task_id: int, session: AsyncSession = Depends(get_session), user = Depends(get_current_user)):
     task = await delete_task(session, task_id, user['id'])
     if not task:

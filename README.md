@@ -1,25 +1,71 @@
-# Documentação da API Todo
+# Aplicação de Lista de Tarefas: Visão Geral e Configuração
 
-Esta ponderada consistia em criar um aplicativo de lista de tarefas com backend dockerizado e uma interface mobile feita com Flutter para Android. A API seguiu os padrões de maturidade de Richardson, foi desenvolvida com FASTAPI e está assíncrona. Por ora, a única função dessa API é gerenciar uma tabela de tasks. A arquitetura não seguiu nenhum padrão específico devido à simplicidade do sistema, mas, em iterações posteriores, se recomendaria implementar uma organização MVC. O código-fonte está disponível na pasta `fastapi` e é executável via docker-compose. 
+## Visão Geral da Aplicação
+Esta aplicação de Lista de Tarefas consiste em um frontend em Flutter e um backend em FastAPI. O backend é projetado de forma assíncrona e monolítica, utilizando PostgreSQL para armazenamento de dados e Docker Compose para orquestração de contêineres. O mecanismo de autenticação utiliza JWTs (JSON Web Tokens) com chaves públicas e privadas, garantindo comunicação segura e armazenamento de tokens.
 
-Já a interface está disponível no caminho `mobile/todoapp`. Ela possui duas telas: uma de boas-vindas e uma com a lista de afazeres. Essa lista busca as tarefas da API e permite que, ao clicar em qualquer uma delas, seja possível editá-las ou deletá-las. Também existe um botão flutuante para que se possa adicionar tarefas novas. Tudo isso tem como entrypoint of arquivo main.dart.
+### Frontend: Flutter
+O frontend é construído usando Flutter, um framework popular para a construção de aplicativos móveis multiplataforma. Ele inclui funcionalidades para adicionar, editar e excluir tarefas, com gerenciamento de estado para garantir que a interface do usuário permaneça sincronizada com o backend.
+
+#### Componentes Principais
+- LoginScreen: A tela de início, que realiza a requisição de login com email e senha e salva o token recebido de forma segura. 
+- TodoListScreen: A tela principal que exibe a lista de tarefas.
+- TaskTile: Um widget que representa uma única tarefa, incluindo opções para editar e excluir a tarefa.
+
+#### Executando o Frontend
+
+1. Clonar o repositório: Clone o repositório do projeto a partir do seu sistema de controle de versão.
+
+```
+git clone https://github.com/elisaflemer/ponderadas-modulo10/tree/main
+cd ponderadas-modulo10/mobile/todoapp
+```
+
+2. Instalar dependências: Certifique-se de ter o Flutter instalado. Em seguida, execute:
+
+```
+flutter pub get
+```
+
+3. Executar o aplicativo: Conecte um dispositivo ou inicie um emulador e execute:
+
+```
+flutter run
+```
+
+### Backend: FastAPI
+O backend é implementado usando FastAPI, um framework web moderno e rápido para a construção de APIs com Python 3.7+. O banco de dados utilizado é o PostgreSQL, e o Docker Compose é usado para gerenciar os serviços.
+
+#### Componentes Principais
+- FastAPI: Lida com os endpoints e a lógica da API.
+- PostgreSQL: O banco de dados usado para armazenar tarefas.
+- Docker Compose: Gerencia a aplicação de múltiplos contêineres, garantindo que o backend e o banco de dados funcionem juntos perfeitamente.
+
+O FastAPI suporta operações assíncronas, que são usadas para lidar com requisições de API de forma eficiente. A natureza assíncrona garante que a aplicação possa lidar com múltiplas requisições simultaneamente, melhorando o desempenho e a capacidade de resposta.
+
+#### Executando o Backend
+
+1. Clone este repositório.
+
+```
+git clone https://github.com/elisaflemer/ponderadas-modulo10/tree/main
+cd ponderadas-modulo10/fastapi
+```
+
+2. Configurar o ambiente: Certifique-se de ter o Docker e Docker Compose instalados.
+
+3. Executar o Docker Compose: No diretório do projeto, execute:
+
+```
+docker-compose up --build
+```
+
+### Autenticação com JWT
+A autenticação é feita usando JWTs (JSON Web Tokens), com chaves pública e privada para assinar e verificar os tokens. Os tokens JWT são armazenados de forma segura no dispositivo móvel usando Flutter Secure Storage.
+
+### Armazenamento Seguro
+Os tokens JWT são armazenados no dispositivo móvel de forma segura, utilizando a biblioteca flutter_secure_storage no Flutter. Isso garante que os tokens de autenticação estejam protegidos contra acessos não autorizados.
 
 ## Demo
-
-[Screencast from 05-05-2024 23:06:32.webm](https://github.com/elisaflemer/ponderadas-modulo10/assets/99259251/42914c75-58f3-4f58-b6ca-4c1fc8ef1833)
-
-## Como executar
-
-### FastAPI
-
-1. Entre na pasta `fastapi`
-2. Execute o seguinte comando: `docker compose up`
-   
-### Flutter
-
-1. Entre na pasta `mobile/todoapp/lib`,
-2. Certifique-se de ter o Android Studio instalado com um emulador configurado para Android.
-3. Execute o arquivo `main.dart` no emulador.
 
 ================================================================================================================================================
 # Ponderadas anteriores 

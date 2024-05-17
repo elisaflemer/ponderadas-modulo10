@@ -69,18 +69,20 @@ class _TodoListScreenState extends State<TodoListScreen> {
     final response = await http.post(
       Uri.parse('$baseUrl/'),
       headers: {
-        'Content-Type': 'application/json', 
+        'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
       body: json.encode({'title': _newTaskController.text}),
     );
 
     if (response.statusCode == 201) {
+      print('Task added');
+      var newTask = json.decode(response.body);
       setState(() {
+        tasks.add(newTask);
         _isAddingTask = false;
         _newTaskController.clear();
       });
-      fetchTasks();
     } else {
       throw Exception('Failed to add task');
     }
@@ -88,11 +90,13 @@ class _TodoListScreenState extends State<TodoListScreen> {
 
   Future<void> _editTask(int index, String newTitle) async {
     final task = tasks[index];
+    String? token = await getToken();
+    if (token == null) return;
     final response = await http.put(
       Uri.parse('$baseUrl/${task['id']}'),
       headers: {
-        'Content-Type': 'application/json', 
-        'Authorization': 'Bearer token',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
       },
       body: json.encode({'title': newTitle}),
     );
@@ -107,18 +111,23 @@ class _TodoListScreenState extends State<TodoListScreen> {
   }
 
   Future<void> _deleteTask(int index) async {
+    print('Deleting task at index: $index');
     final task = tasks[index];
+    String? token = await getToken();
+    if (token == null) return;
+
     final response = await http.delete(
       Uri.parse('$baseUrl/${task['id']}'),
       headers: {
-        'Authorization': 'Bearer token',
+        'Authorization': 'Bearer $token',
       },
     );
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == 204) {
       setState(() {
         tasks.removeAt(index);
       });
+      print('Task deleted successfully');
     } else {
       throw Exception('Failed to delete task');
     }
@@ -130,11 +139,10 @@ class _TodoListScreenState extends State<TodoListScreen> {
       appBar: AppBar(
         title: Text('Todo List'),
       ),
-      body: ListView.builder(
-        itemCount: _isAddingTask ? tasks.length + 1 : tasks.length,
-        itemBuilder: (context, index) {
-          if (_isAddingTask && index == 0) {
-            return Padding(
+      body: Column(
+        children: [
+          if (_isAddingTask)
+            Padding(
               padding: const EdgeInsets.all(8.0),
               child: Row(
                 children: [
@@ -151,18 +159,27 @@ class _TodoListScreenState extends State<TodoListScreen> {
                       },
                     ),
                   ),
-                
+                  IconButton(
+                    icon: Icon(Icons.add),
+                    onPressed: _addTask,
+                  ),
                 ],
               ),
-            );
-          }
-          int taskIndex = _isAddingTask ? index - 1 : index;
-          return TaskTile(
-            task: tasks[taskIndex],
-            onEdit: (newTitle) => _editTask(taskIndex, newTitle),
-            onDelete: () => _deleteTask(taskIndex),
-          );
-        },
+            ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: tasks.length,
+              itemBuilder: (context, index) {
+                return TaskTile(
+                  key: ValueKey(tasks[index]['id']),
+                  task: tasks[index],
+                  onEdit: (newTitle) => _editTask(index, newTitle),
+                  onDelete: () => _deleteTask(index),
+                );
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
