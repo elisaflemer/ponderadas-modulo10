@@ -1,19 +1,33 @@
 import 'package:flutter/material.dart';
-import 'screens/welcome_screen.dart';
+import 'package:flutter/widgets.dart';
+import 'package:todoapp/screens/login_screen.dart';
+import 'package:todoapp/screens/todo_list_screen.dart';
 
 void main() {
-  runApp(TodoApp());
+  runApp(const MyApp());
 }
 
-class TodoApp extends StatelessWidget {
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Todo App',
+      title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        // This is the theme of your application.
+
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.greenAccent),
+        useMaterial3: true,
       ),
-      home: WelcomeScreen(),
+      // Define the initial route
+      initialRoute: '/login',
+      // Define the routes
+      routes: {
+        '/login': (context) => LoginScreen(),
+        '/todo': (context) => TodoListScreen(),
+      },
     );
   }
 }

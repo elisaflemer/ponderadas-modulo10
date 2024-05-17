@@ -1,12 +1,25 @@
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
 import os
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker, DeclarativeBase
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncAttrs
 
-DATABASE_URL = os.environ.get("DATABASE_URL")
-print(DATABASE_URL)
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+# Create the Async Engine
 engine = create_async_engine(DATABASE_URL, echo=True)
-AsyncSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, class_=AsyncSession)
 
-async def get_db():
-    async with AsyncSessionLocal() as session:
-        yield session
+# Session maker bound to the engine
+async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+
+class Base(AsyncAttrs, DeclarativeBase):
+    pass
+
+async def get_session() -> AsyncSession:
+    async with async_session() as session:
+        # Set search path at the start of each session
+        try:
+            yield session
+        finally:
+            await session.close()
