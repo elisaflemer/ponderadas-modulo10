@@ -29,7 +29,7 @@ def create_access_token(data: dict, expire_minutes: int = 15):
 
 def get_public_key():
     try:
-        with open("public_key.pem", "rb") as key_file:
+        with open("./services/public_key.pem", "rb") as key_file:
             return key_file.read()
     except FileNotFoundError:
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Public key not found")

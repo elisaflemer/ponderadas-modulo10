@@ -56,7 +56,7 @@ class LoginScreenState extends State<LoginScreen> {
             ElevatedButton(
               onPressed: () async {
                 print('Email: ${_emailController.text}');
-               var url = Uri.parse('https://b2c5-187-180-189-147.ngrok-free.app/api/v1/users/login');
+               var url = Uri.parse('https://efeb-187-180-189-147.ngrok-free.app/api/v1/users/login');
                print('URL: $url');
                 var response = await http.post(
                   url,
@@ -76,11 +76,9 @@ class LoginScreenState extends State<LoginScreen> {
 
                   // Save the token in the secure storage
                   var storage = const FlutterSecureStorage();
-                  var token = jsonDecode(response.body)['token'];
+                  var token = jsonDecode(response.body)['access_token'];
                   await storage.write(key: 'token', value: token);
-                  
-
-                  // Navigate to the next screen
+              
                   Navigator.pushNamed(context, '/todo');
           
                 } else {

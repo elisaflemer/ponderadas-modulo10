@@ -26,7 +26,7 @@ async def login(request: UserLoginRequest, session: AsyncSession = Depends(get_s
     if not verify_password(request.password, user['password_hash']):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
     
-    access_token = create_access_token(data={"sub": user['email']})
+    access_token = create_access_token(data={"id": user['id']})
     return LoginResponseModel(email=user['email'], access_token=access_token, token_type="bearer")
 
 @router.get("/users/{user_email}", response_model=UserResponseModel)
