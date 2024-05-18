@@ -67,6 +67,11 @@ Os tokens JWT são armazenados no dispositivo móvel de forma segura, utilizando
 
 ## Demo
 
+
+https://github.com/elisaflemer/ponderadas-modulo10/assets/99259251/c7b9e0d9-25df-48c8-aa4a-e7bbf32d3251
+
+
+
 ================================================================================================================================================
 # Ponderadas anteriores 
 
