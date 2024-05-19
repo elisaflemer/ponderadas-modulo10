@@ -1,38 +1,52 @@
-version: '3.8'
+version: '3'
 
 services:
-  db-fastapi:
+  
+  postgres:
     image: postgres:latest
-    restart: always
-    user: postgres
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: todo_db_fastapi
-      PGUSER: postgres
+      POSTGRES_PASSWORD: postgres 
+      POSTGRES_DB: asky
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
-      - db_fastapi_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
     healthcheck:
-      #CHANGE 1: this command checks if the database is ready, right on the source db server
-      test: [ "CMD-SHELL", "pg_isready" ]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
       timeout: 5s
       retries: 5
-
-
-  fastapi:
-    build: .
-    restart: always
+ 
+  users:
+    build: ./users
     ports:
-      - "8000:8000"
-    depends_on:
-      #CHANGE 2: it prevents issuing a request while the server is starting to depend on the healthy status of postgres-db 
-      db-fastapi:
-        condition: service_healthy
+      - "8001:8001"
     environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db-fastapi:5432/todo_db_fastapi
+      DATABASE_URL: "postgresql+asyncpg://postgres:postgres@postgres/asky"
+      GATEWAY_URL: "http://gateway:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  images:
+    build: ./image_processor
+    ports:
+      - "8002:8002"
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://postgres:postgres@postgres/asky"
+      GATEWAY_URL: "http://gateway:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  gateway:
+    build: ./gateway
+    ports:
+      - "8000:80"
+    depends_on: 
+      - users
+      - images
 
 volumes:
-  db_fastapi_data:
+  postgres_data:

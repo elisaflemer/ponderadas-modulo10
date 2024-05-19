@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-
+import 'package:todoapp/constants/baseUrl.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,7 +15,6 @@ class LoginScreen extends StatefulWidget {
 class LoginScreenState extends State<LoginScreen> {
   TextEditingController _emailController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
-  String catFact = '';
 
   @override
   Widget build(BuildContext context) {
@@ -46,18 +45,9 @@ class LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-              catFact,
-
-                )
-            ),
             ElevatedButton(
               onPressed: () async {
-                print('Email: ${_emailController.text}');
-               var url = Uri.parse('https://efeb-187-180-189-147.ngrok-free.app/api/v1/users/login');
-               print('URL: $url');
+                var url = Uri.parse(baseUrl + '/users/login');
                 var response = await http.post(
                   url,
                   headers: <String, String>{
@@ -71,22 +61,29 @@ class LoginScreenState extends State<LoginScreen> {
 
                 print('Response status: ${response.statusCode}');
 
-                // To work with the output as JSON/Map
                 if (response.statusCode == 200) { // HTTP OK
-
                   // Save the token in the secure storage
                   var storage = const FlutterSecureStorage();
                   var token = jsonDecode(response.body)['access_token'];
                   await storage.write(key: 'token', value: token);
               
-                  Navigator.pushNamed(context, '/todo');
-          
+                  Navigator.pushNamed(context, '/camera');
                 } else {
                   // Handle error or non-200 responses
                   print('Request failed with status: ${response.statusCode}.');
                 }
-                          },
+              },
               child: const Text("Entrar"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/signup');
+              },
+              child: const Text("Cadastrar"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green, // Change the button color
+                textStyle: const TextStyle(fontSize: 16),
+              ),
             ),
           ],
         ),

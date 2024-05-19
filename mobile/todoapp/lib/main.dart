@@ -1,32 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:camera/camera.dart';
 import 'package:todoapp/screens/login_screen.dart';
-import 'package:todoapp/screens/todo_list_screen.dart';
+import 'package:todoapp/screens/signup_screen.dart';
+import 'package:todoapp/screens/camera_screen.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final cameras = await availableCameras();
+  final firstCamera = cameras.first;
+
+  runApp(MyApp(camera: firstCamera));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final CameraDescription camera;
 
-  // This widget is the root of your application.
+  const MyApp({super.key, required this.camera});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.greenAccent),
         useMaterial3: true,
       ),
-      // Define the initial route
       initialRoute: '/login',
-      // Define the routes
       routes: {
-        '/login': (context) => LoginScreen(),
-        '/todo': (context) => TodoListScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/signup': (context) => const SignUpScreen(),
+        '/camera': (context) => CameraScreen(camera: camera),
       },
     );
   }
