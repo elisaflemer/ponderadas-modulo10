@@ -5,6 +5,8 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 import 'package:http_parser/http_parser.dart';
+import 'dart:convert';
+import 'package:todoapp/constants/baseUrl.dart';
 
 class CameraScreen extends StatefulWidget {
   final CameraDescription camera;
@@ -18,6 +20,8 @@ class CameraScreen extends StatefulWidget {
 class CameraScreenState extends State<CameraScreen> {
   late CameraController _controller;
   late Future<void> _initializeControllerFuture;
+  bool _isLoading = false;
+  String? _processedImagePath;
 
   @override
   void initState() {
@@ -36,20 +40,29 @@ class CameraScreenState extends State<CameraScreen> {
   }
 
   Future<void> _takePicture() async {
+    setState(() {
+      _isLoading = true;
+      _processedImagePath = null;
+    });
+
     try {
       await _initializeControllerFuture;
       final image = await _controller.takePicture();
       await _sendPicture(File(image.path));
     } catch (e) {
       print(e);
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
   Future<void> _sendPicture(File image) async {
-    var url = Uri.parse('https://example.com/upload');
+    var url = Uri.parse(baseUrl + '/images/black-and-white/');
     var request = http.MultipartRequest('POST', url)
       ..files.add(await http.MultipartFile.fromPath(
-        'picture',
+        'file',
         image.path,
         contentType: MediaType('image', 'jpeg'),
       ));
@@ -57,7 +70,16 @@ class CameraScreenState extends State<CameraScreen> {
     var response = await request.send();
 
     if (response.statusCode == 200) {
-      print('Picture uploaded successfully');
+      var responseData = await http.Response.fromStream(response);
+      var bytes = responseData.bodyBytes;
+      var tempDir = await getTemporaryDirectory();
+      var tempFile = File('${tempDir.path}/${basename(image.path)}.png');
+      await tempFile.writeAsBytes(bytes);
+
+      setState(() {
+        _processedImagePath = tempFile.path;
+      });
+      print('Picture processed and downloaded successfully');
     } else {
       print('Picture upload failed');
     }
@@ -69,20 +91,38 @@ class CameraScreenState extends State<CameraScreen> {
       appBar: AppBar(
         title: const Text('Take a Picture'),
       ),
-      body: FutureBuilder<void>(
-        future: _initializeControllerFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            return CameraPreview(_controller);
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _takePicture,
-        child: const Icon(Icons.camera),
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _processedImagePath != null
+              ? Column(
+                  children: [
+                    Expanded(child: Image.file(File(_processedImagePath!))),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _processedImagePath = null;
+                        });
+                      },
+                      child: const Text('Take Another Picture'),
+                    ),
+                  ],
+                )
+              : FutureBuilder<void>(
+                  future: _initializeControllerFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.done) {
+                      return CameraPreview(_controller);
+                    } else {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                  },
+                ),
+      floatingActionButton: _processedImagePath == null
+          ? FloatingActionButton(
+              onPressed: _takePicture,
+              child: const Icon(Icons.camera),
+            )
+          : null,
     );
   }
 }

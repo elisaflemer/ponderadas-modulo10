@@ -24,7 +24,8 @@ class SignUpScreenState extends State<SignUpScreen> {
       return;
     }
 
-    var url = Uri.parse(baseUrl + '/users/signup');
+    var url = Uri.parse(baseUrl + '/users/register');
+    print(url);
     var response = await http.post(
       url,
       headers: <String, String>{

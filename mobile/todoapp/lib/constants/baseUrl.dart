@@ -1,1 +1,1 @@
-const baseUrl = 'https://d823-187-180-189-147.ngrok-free.app/app/v1';
+const baseUrl = 'https://d823-187-180-189-147.ngrok-free.app/api/v1';

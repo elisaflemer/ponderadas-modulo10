@@ -8,3 +8,5 @@ passlib
 pydantic
 pyjwt[crypto]
 starlette
+pillow
+python-multipart

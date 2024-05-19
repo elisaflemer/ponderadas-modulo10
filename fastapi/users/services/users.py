@@ -10,25 +10,23 @@ async def get_users(session: AsyncSession):
     stmt = select(User)
     result = await session.execute(stmt)
     users = result.scalars().all()
-    return [user.to_dict() for user in users]
+    return [user for user in users]
 
 async def get_user_by_email(session, email: str):
-    stmt = select(User).filter(User.email == email).options(selectinload(User.tasks))
+    stmt = select(User).filter(User.email == email)
     result = await session.execute(stmt)
     user = result.scalar()
-    return user.to_dict() if user else None
+    return user
 
 async def get_user_by_id(session, user_id: int):
     stmt = select(User).filter(User.id == user_id)
     result = await session.execute(stmt)
     user = result.scalar()
-    user = user.to_dict() if user else None
-    return {"id": user["id"], "email": user["email"]}
+    return user
 
 async def create_user(session, email: str, password_hash: str):
     user = User(email=email, password_hash=password_hash)
     session.add(user)
     await session.commit()
-    user = user.to_dict()
     return user
 
