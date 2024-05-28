@@ -5,13 +5,14 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 import 'package:http_parser/http_parser.dart';
-import 'dart:convert';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:todoapp/constants/baseUrl.dart';
 
 class CameraScreen extends StatefulWidget {
   final CameraDescription camera;
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
-  const CameraScreen({super.key, required this.camera});
+  const CameraScreen({super.key, required this.camera, required this.flutterLocalNotificationsPlugin});
 
   @override
   State<CameraScreen> createState() => CameraScreenState();
@@ -79,10 +80,36 @@ class CameraScreenState extends State<CameraScreen> {
       setState(() {
         _processedImagePath = tempFile.path;
       });
+
+      // Show notification
+      await _showNotification('Success', 'Picture processed and downloaded successfully');
+      
       print('Picture processed and downloaded successfully');
     } else {
       print('Picture upload failed');
     }
+  }
+
+  Future<void> _showNotification(String title, String body) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'your_channel_id', // id
+      'Your Channel Name', // name
+      channelDescription: 'This channel is used for important notifications.', // description
+      importance: Importance.high,
+      priority: Priority.high,
+      playSound: false,
+      enableVibration: true,
+    );
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+    await widget.flutterLocalNotificationsPlugin.show(
+      0,
+      title,
+      body,
+      platformChannelSpecifics,
+      payload: 'item x',
+    );
   }
 
   @override
