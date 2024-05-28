@@ -7,6 +7,7 @@ import 'package:path/path.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:todoapp/constants/baseUrl.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class CameraScreen extends StatefulWidget {
   final CameraDescription camera;
@@ -60,35 +61,45 @@ class CameraScreenState extends State<CameraScreen> {
   }
 
   Future<void> _sendPicture(File image) async {
-    var url = Uri.parse(baseUrl + '/images/black-and-white/');
-    var request = http.MultipartRequest('POST', url)
-      ..files.add(await http.MultipartFile.fromPath(
-        'file',
-        image.path,
-        contentType: MediaType('image', 'jpeg'),
-      ));
+  // Create an instance of FlutterSecureStorage
+  final storage = FlutterSecureStorage();
+  
+  // Retrieve the token from secure storage
+  String? token = await storage.read(key: 'token');
 
-    var response = await request.send();
-
-    if (response.statusCode == 200) {
-      var responseData = await http.Response.fromStream(response);
-      var bytes = responseData.bodyBytes;
-      var tempDir = await getTemporaryDirectory();
-      var tempFile = File('${tempDir.path}/${basename(image.path)}.png');
-      await tempFile.writeAsBytes(bytes);
-
-      setState(() {
-        _processedImagePath = tempFile.path;
-      });
-
-      // Show notification
-      await _showNotification('Success', 'Picture processed and downloaded successfully');
-      
-      print('Picture processed and downloaded successfully');
-    } else {
-      print('Picture upload failed');
-    }
+  // Check if token is not null
+  if (token == null) {
+    print('No token found');
+    return;
   }
+
+  var url = Uri.parse(baseUrl + '/images/black-and-white/');
+  var request = http.MultipartRequest('POST', url)
+    ..files.add(await http.MultipartFile.fromPath(
+      'file',
+      image.path,
+      contentType: MediaType('image', 'jpeg'),
+    ))
+    ..headers['Authorization'] = 'Bearer $token';
+
+  var response = await request.send();
+
+  if (response.statusCode == 200) {
+    var responseData = await http.Response.fromStream(response);
+    var bytes = responseData.bodyBytes;
+    var tempDir = await getTemporaryDirectory();
+    var tempFile = File('${tempDir.path}/${basename(image.path)}.png');
+    await tempFile.writeAsBytes(bytes);
+
+    setState(() {
+      _processedImagePath = tempFile.path;
+    });
+
+    print('Picture processed and downloaded successfully');
+  } else {
+    print('Picture upload failed with status: ${response.statusCode}');
+  }
+}
 
   Future<void> _showNotification(String title, String body) async {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =

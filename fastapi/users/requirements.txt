@@ -8,3 +8,4 @@ passlib
 pydantic
 pyjwt[crypto]
 starlette
+requests

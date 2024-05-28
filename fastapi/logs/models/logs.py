@@ -8,7 +8,7 @@ class Log(Base):
     id = Column(Integer, primary_key=True, index=True)
     message = Column(String)
     level = Column(Enum('INFO', 'WARNING', 'ERROR', 'CRITICAL', name='log_levels'))
-    user_id = Column(Integer, ForeignKey('users.id'))
+    user_id = Column(Integer)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 

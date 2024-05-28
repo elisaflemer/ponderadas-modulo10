@@ -11,33 +11,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SECRET_KEY = "YOUR_SECRET_KEY"
 ALGORITHM = "HS256"
 
-with open("./services/private_key.pem", "rb") as key_file:
-    private_key = key_file.read()
-
-def hash_password(password: str):
-    return pwd_context.hash(password)
-
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
-
-def create_access_token(data: dict, expire_minutes: int = 15):
-    to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=expire_minutes)  # Token validity
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, private_key, algorithm="RS256")
-    return encoded_jwt
-
-def generate_service_token():
-    payload = {
-        "sub": "service",
-        "exp": datetime.utcnow() + timedelta(minutes=30)
-    }
-    with open("./services/private_key.pem", "rb") as key_file:
-        private_key = key_file.read()
-    token = jwt.encode(payload, private_key, algorithm="RS256")
-    print('=============================')
-    print(f"Service token: {token}")
-    
 def get_public_key():
     try:
         with open("./services/public_key.pem", "rb") as key_file:
@@ -68,5 +41,3 @@ async def get_current_user(authorization: str = Header(...)):
         raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
     print(user_info)
     return user_info
-
-generate_service_token()

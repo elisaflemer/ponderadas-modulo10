@@ -40,6 +40,17 @@ services:
       postgres:
         condition: service_healthy
 
+  logs:
+    build: ./logs
+    ports:
+      - "8003:8003"
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://postgres:postgres@postgres/asky"
+      GATEWAY_URL: "http://gateway:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   gateway:
     build: ./gateway
     ports:

@@ -10,4 +10,3 @@ pyjwt[crypto]
 starlette
 pillow
 python-multipart
-requests
