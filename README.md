@@ -135,34 +135,56 @@ fastapi/
 ### Componentes Principais
 1. **Gateway**
 nginx.conf: Configuração do Nginx para redirecionar as requisições aos microsserviços.
+
 Dockerfile: Configuração do contêiner Docker para o gateway.
 
 2. **Image Processor**
 models/: Modelos de dados para o processamento de imagens.
+
 routes/: Rotas da API para processamento de imagens.
+
 services/: Lógica de negócios para processamento de imagens.
+
 database.py: Configuração do banco de dados.
+
 main.py: Inicialização do serviço de processamento de imagens.
+
 Dockerfile: Configuração do contêiner Docker.
+
 requirements.txt: Dependências do serviço.
 
 3. **Logs**
 models/: Modelos de dados para logs.
+
 routes/: Rotas da API para gerenciamento de logs.
+
 services/: Lógica de negócios e autenticação para logs.
+
 public_key.pem: Chave pública para verificação de JWT.
+
 database.py: Configuração do banco de dados.
+
 main.py: Inicialização do serviço de logs.
+
 Dockerfile: Configuração do contêiner Docker.
+
 requirements.txt: Dependências do serviço.
 
 4. **Users**
 models/: Modelos de dados para autenticação de usuários.
+
 routes/: Rotas da API para autenticação de usuários.
+
 services/: Lógica de negócios e autenticação de usuários.
+
 private_key.pem: Chave privada para assinatura de JWT.
+
 public_key.pem: Chave pública para verificação de JWT.
+
 database.py: Configuração do banco de dados.
+
 main.py: Inicialização do serviço de autenticação de usuários.
+
 Dockerfile: Configuração do contêiner Docker.
+
 requirements.txt: Dependências do serviço.
