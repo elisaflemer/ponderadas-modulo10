@@ -7,8 +7,8 @@ class Log(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     message = Column(String)
-    level = Column(Enum('INFO', 'WARNING', 'ERROR', 'CRITICAL', name='log_levels'))
-    user_id = Column(Integer)
+    level = Column(String)
+    user = Column(String)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
@@ -17,6 +17,7 @@ class Log(Base):
             'id': self.id,
             'message': self.message,
             'level': self.level,
-            'user_id': self.user_id,
+            'user': self.user,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
+        

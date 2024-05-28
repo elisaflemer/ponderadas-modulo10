@@ -8,6 +8,8 @@ from fastapi.responses import StreamingResponse
 from services.image_processor import convert_to_black_and_white
 import io
 import requests
+import os
+import json
 
 router = APIRouter()
 
@@ -23,10 +25,10 @@ async def process_image(file: UploadFile = File(...), current_user: dict = Depen
     log = {
         "message": f"IMAGE UPLOADED: {file.filename}",
         "level": "INFO",
-        "user_id": current_user["id"]
+        "user": current_user["sub"]
     }
     
-    requests.post("http://localhost:8000/api/v1/logs/", json=log, headers={"Authorization": f"Bearer {get_service_access_token()}"})
+    requests.post(f"{os.getenv('GATEWAY_URL')}/api/v1/logs/", json=log, headers={"Authorization": f"Bearer {get_service_access_token()}", "Content-Type": "application/json"})
 
     # Convert the image to black and white using the service function
     bw_image_data = await convert_to_black_and_white(image_data)

@@ -6,6 +6,8 @@ from services.users import get_users, get_user_by_email, get_user_by_id, create_
 from database import get_session  # make sure to have this function defined in your database module
 from models.schemas import UserRegistrationRequest, UserResponseModel, LoginResponseModel, UserLoginRequest
 import requests
+import os
+import json
 
 router = APIRouter()
 
@@ -27,9 +29,9 @@ async def register(request: UserRegistrationRequest, session: AsyncSession = Dep
     log = {
         "message": f"NEW USER REGISTERED: {user.email}",
         "level": "INFO",
-        "user_id": user.id
+        "user": user.email
     }
-    requests.post("http://localhost:8000/api/v1/logs/", json=log, headers={"Authorization": f"Bearer {service_access_token}"})
+    requests.post(f"{os.getenv('GATEWAY_URL')}/api/v1/logs/", json=log, headers={"Authorization": f"Bearer {service_access_token}", "Content-Type": "application/json"})
     return UserResponseModel(id=user.id, email=user.email)
 
 @router.post("/login", response_model=LoginResponseModel)
@@ -46,10 +48,10 @@ async def login(request: UserLoginRequest, session: AsyncSession = Depends(get_s
     log = {
         "message": f"USER LOGGED IN: {user.email}",
         "level": "INFO",
-        "user_id": user.id
+        "user": user.email
     }
     
-    requests.post("http://localhost:8000/api/v1/logs/", json=log, headers={"Authorization": f"Bearer {service_access_token}"})
+    requests.post(f"{os.getenv('GATEWAY_URL')}/api/v1/logs/", json=log, headers={"Authorization": f"Bearer {service_access_token}", "Content-Type": "application/json"})
     
     return LoginResponseModel(email=user.email, access_token=access_token, token_type="bearer")
 
