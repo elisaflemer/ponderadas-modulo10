@@ -1,8 +1,7 @@
+// screens/signup_screen.dart
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:todoapp/constants/baseUrl.dart';
-
+import 'package:todoapp/controllers/signup_controller.dart';
+import 'package:todoapp/widgets/custom_text_field.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -12,39 +11,7 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class SignUpScreenState extends State<SignUpScreen> {
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
-  TextEditingController _confirmPasswordController = TextEditingController();
-
-  Future<void> _signUp() async {
-    if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Passwords do not match')),
-      );
-      return;
-    }
-
-    var url = Uri.parse(baseUrl + '/users/register');
-    print(url);
-    var response = await http.post(
-      url,
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, String>{
-        'email': _emailController.text,
-        'password': _passwordController.text,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      Navigator.pushNamed(context, '/login');
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Sign-up failed: ${response.body}')),
-      );
-    }
-  }
+  final SignUpController _controller = SignUpController();
 
   @override
   Widget build(BuildContext context) {
@@ -57,38 +24,31 @@ class SignUpScreenState extends State<SignUpScreen> {
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                controller: _emailController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Digite seu email',
-                ),
+              child: CustomTextField(
+                controller: _controller.emailController,
+                labelText: 'Digite seu email',
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                controller: _passwordController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Digite sua senha',
-                ),
+              child: CustomTextField(
+                controller: _controller.passwordController,
+                labelText: 'Digite sua senha',
                 obscureText: true,
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                controller: _confirmPasswordController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Confirme sua senha',
-                ),
+              child: CustomTextField(
+                controller: _controller.confirmPasswordController,
+                labelText: 'Confirme sua senha',
                 obscureText: true,
               ),
             ),
             ElevatedButton(
-              onPressed: _signUp,
+              onPressed: () async {
+                await _controller.signUp(context);
+              },
               child: const Text("Cadastrar"),
             ),
           ],
