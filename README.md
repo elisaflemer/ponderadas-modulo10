@@ -5,6 +5,8 @@ Este projeto é um processador de imagens que permite que os usuários façam lo
 ## Vídeos Demonstrativos
 ### Frontend
 
+https://github.com/elisaflemer/ponderadas-modulo10/assets/99259251/fd70a326-7687-498f-8821-ef35898bd827
+
 ### Backend
 
 ## Instruções de Configuração e Execução
@@ -54,23 +56,26 @@ constants/baseUrl.dart: Este arquivo contém a definição da URL base da API, c
 
 2. **Controllers**
 controllers/login_controller.dart: Controlador responsável por gerenciar a lógica de autenticação do usuário, incluindo login e armazenamento seguro do token.
+
 controllers/signup_controller.dart: Controlador responsável por gerenciar a lógica de registro de novos usuários.
 
-3. **Models**
+4. **Models**
 models/user.dart: Define a estrutura de dados do usuário. Utiliza a biblioteca json_serializable para facilitar a serialização e desserialização de objetos JSON.
 
-4. **Screens**
+5. **Screens**
 screens/camera_screen.dart: Tela que permite ao usuário capturar fotos utilizando a câmera do dispositivo. Após a captura, a foto é enviada para o backend para ser processada em preto e branco.
+
 screens/login_screen.dart: Tela de login do usuário. Coleta as credenciais e chama o controlador de login para autenticação.
+
 screens/signup_screen.dart: Tela de registro de novos usuários. Coleta as informações necessárias e chama o controlador de registro para criar um novo usuário.
 
-5. **Services**
+6. **Services**
 services/api_service.dart: Serviço responsável por fazer as chamadas HTTP para o backend. Inclui métodos para login, registro e envio de imagens.
 
-6. **Widgets**
+7. **Widgets**
 widgets/custom_text_field.dart: Contém widgets reutilizáveis para a interface do usuário, como campos de texto personalizados.
 
-7. **Main**
+8. **Main**
 main.dart: Ponto de entrada da aplicação Flutter. Configura a inicialização do aplicativo e define as rotas principais.
 
 ### Descrição Adicional dos Componentes
