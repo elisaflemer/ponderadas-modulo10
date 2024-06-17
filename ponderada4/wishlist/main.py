@@ -1,48 +1,39 @@
 import logging
-import json
-import sys
-import traceback
+from fastapi import FastAPI, APIRouter
+from routers.wishlist import router as wishlist_router
+from databases.database import get_session, engine, Base
+import uvicorn
+from logs.logs import log_info
+
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-try:
-    from fastapi import FastAPI, APIRouter, Depends
-    from routers.wishlist import router as wishlist_router
-    from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-    from sqlalchemy.future import select
-    from databases.database import get_session, engine, Base
-    import uvicorn
-    from models.wishlist import Wishlist
 
-    # Initialize FastAPI app
-    app = FastAPI()
+# Initialize FastAPI app
+app = FastAPI()
 
-    # Create API router with a prefix
-    api_router = APIRouter(prefix="/wishlist")
-    api_router.include_router(wishlist_router)
+# Create API router with a prefix
+api_router = APIRouter(prefix="/wishlist")
+api_router.include_router(wishlist_router)
 
-    @app.on_event("startup")
-    async def startup():
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
+@app.on_event("startup")
+async def startup():
+    print('AAAAAAAAAAAAAAAAAAAAAA')
+    logger.info("Starting up and initializing database")
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    logger.info("Database initialization complete")
 
-    @api_router.get("/heartbeat")
-    async def read_root():
-        return {"message": "Wishlist is alive!"}
+@api_router.get("/heartbeat")
+async def read_root():
+    return {"message": "Wishlist is alive!"}
 
-    # Include the API router
-    app.include_router(api_router)
+# Include the API router
+app.include_router(api_router)
 
-    if __name__ == "__main__":
-        uvicorn.run(app, host="0.0.0.0", port=8000)
+if __name__ == "__main__":
+    logger.info("Starting the application")
+    uvicorn.run(app, host="0.0.0.0", port=8002)
 
-except ImportError as e:
-    error_info = {
-        "error": str(e),
-        "type": type(e).__name__,
-        "traceback": traceback.format_exc().splitlines()
-    }
-    logger.error(json.dumps(error_info))
-    sys.exit(1)

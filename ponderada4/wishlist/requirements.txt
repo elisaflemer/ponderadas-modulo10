@@ -1,5 +1,5 @@
-fastapi==0.111.0
-SQLAlchemy==2.0.30
-alembic==1.13.1
+fastapi
+SQLAlchemy
+alembic
 python-json-logger
 asyncpg

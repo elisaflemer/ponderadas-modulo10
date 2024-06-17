@@ -19,7 +19,7 @@ services:
   wishlist:
     build: ./wishlist
     ports:
-      - "8000:8000"
+      - "8002:8002"
     environment:
       DATABASE_URL: "postgresql+asyncpg://postgres:postgres@postgres/ponderada"
       GATEWAY_URL: "http://gateway:80"
@@ -27,33 +27,65 @@ services:
       postgres:
         condition: service_healthy
 
-  filebeat:
-    build: ./filebeat/
-    container_name: filebeat
-    volumes:
-      - ./logs:/src/logs
-      - /var/lib/docker:/var/lib/docker:ro
-      - /var/run/docker.sock:/var/run/docker.sock
+  usuarios:
+    build: ./usuarios
+    ports:
+      - "8001:8001"
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://postgres:postgres@postgres/ponderada"
+      GATEWAY_URL: "http://gateway:80"
     depends_on:
+      postgres:
+        condition: service_healthy
+
+  produtos:
+    build: ./produtos
+    ports:
+      - "8003:8003"
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://postgres:postgres@postgres/ponderada"
+      GATEWAY_URL: "http://gateway:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  gateway:
+    build: ./gateway
+    ports:
+      - "8000:80"
+    depends_on: 
+      - usuarios
+      - postgres
       - wishlist
-      - elasticsearch
-      - kibana
-    network_mode: "host"
+      - produtos
 
-  elasticsearch:
-    build: ./elasticsearch/
-    container_name: elasticsearch
-    ports:
-      - "9200:9200"
-      - "9300:9300"
+  # filebeat:
+  #   build: ./filebeat/
+  #   container_name: filebeat
+  #   volumes:
+  #     - ./logs:/src/logs
+  #     - /var/lib/docker:/var/lib/docker:ro
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   depends_on:
+  #     - wishlist
+  #     - elasticsearch
+  #     - kibana
+  #   network_mode: "host"
 
-  kibana:
-    build: ./kibana/
-    container_name: kibana
-    ports:
-      - "5601:5601"
-    depends_on:
-      - elasticsearch
+  # elasticsearch:
+  #   build: ./elasticsearch/
+  #   container_name: elasticsearch
+  #   ports:
+  #     - "9200:9200"
+  #     - "9300:9300"
+
+  # kibana:
+  #   build: ./kibana/
+  #   container_name: kibana
+  #   ports:
+  #     - "5601:5601"
+  #   depends_on:
+  #     - elasticsearch
 
 volumes:
     elasticsearch_data:

@@ -1,47 +1,45 @@
-# src/repository/produtos.py
 
 from models.produtos import Produto
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.sql import select, update
 from datetime import datetime
+from schemas.produtos import Produto as ProdutosSchema
 
-class ProdutoRepository:
-    def __init__(self, db: Session):
-        self.db = db
+class ProdutosRepository:
+    def __init__(self):
+        pass
 
-    def get(self, produto_id):
-        return self.db.query(Produto).get(produto_id)
+    async def get(self, produto_id: int, db: AsyncSession):
+        stmt = select(Produto).where(Produto.id == produto_id)
+        result = await db.execute(stmt)
+        result = result.scalars().first()
+        return result
+    
+    async def get_all(self, db: AsyncSession):
+        stmt = select(Produto)
+        result = await db.execute(stmt)
+        result = result.scalars().all()
+        return
 
-    def get_all(self):
-        return self.db.query(Produto).all()
+    async def add(self, produto: Produto, db: AsyncSession):
+        produto.created_at = datetime.now()
+        db.add(produto)
+        await db.commit()
+        return produto
 
-    def add(self, produto: Produto):
-        produto.id = None
-        produto.data_criacao = datetime.now()
-        self.db.add(produto)
-        self.db.flush()
-        self.db.commit()
-        return {"message": "Produto cadastrado com sucesso"}
-
-    def update(self, produto_id, produto):
-        produtodb = self.db.query(Produto).filter(Produto.id == produto_id).first()
-        if produtodb is None:
+    async def update(self, produto_id: int, produto: ProdutosSchema, db: AsyncSession):
+        produto_db = await db.get(Produto, produto_id)
+        if produto_db is None:
             return {"message": "Produto não encontrado"}
-        produto.data_modificacao = datetime.now()
-        produto = produto.__dict__
-        produto.pop("_sa_instance_state")
-        produto.pop("data_criacao")
-        produto.pop("id")
-        self.db.query(Produto).filter(Produto.id == produto_id).update(produto)
-        self.db.flush()
-        self.db.commit()
-        return {"message": "Produto atualizado com sucesso"}
+        produto_db.id_cliente = produto.id_cliente
+        produto_db.id_produto = produto.id_produto
+        await db.commit()
+        return produto_db
 
-    def delete(self, produto_id):
-        produtodb = self.db.query(Produto).filter(Produto.id == produto_id).first()
-        if produtodb is None:
+    async def delete(self, produto_id: int, db: AsyncSession):
+        produto = await db.get(Produto, produto_id)
+        if produto is None:
             return {"message": "Produto não encontrado"}
-        self.db.query(Produto).filter(Produto.id == produto_id).delete()
-        self.db.flush()
-        self.db.commit()
-        return {"message": "Produto deletado com sucesso"}
-        
+        db.delete(produto)
+        await db.commit()
+        return {"message": "Produto deletado"}
