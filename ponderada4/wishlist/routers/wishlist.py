@@ -30,10 +30,12 @@ async def create_wishlist(wishlist: WishlistSchema, db: AsyncSession = Depends(g
 
 @router.put("/{wishlist_id}")
 async def update_wishlist(wishlist_id: int, wishlist: WishlistSchema, db: AsyncSession = Depends(get_session)):
+    log_info(f"Acessando rota /wishlist/{wishlist_id}, método PUT")
     wishlistService = WishlistService()
     return await wishlistService.update(wishlist_id,wishlist, db)
     
 @router.delete("/{wishlist_id}")
 async def delete_wishlist(wishlist_id: int, db: AsyncSession = Depends(get_session)):
+    log_info(f"Acessando rota /wishlist/{wishlist_id}, método DELETE")
     wishlistService = WishlistService()
     return await wishlistService.delete(wishlist_id, db)

@@ -59,33 +59,33 @@ services:
       - wishlist
       - produtos
 
-  # filebeat:
-  #   build: ./filebeat/
-  #   container_name: filebeat
-  #   volumes:
-  #     - ./logs:/src/logs
-  #     - /var/lib/docker:/var/lib/docker:ro
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #   depends_on:
-  #     - wishlist
-  #     - elasticsearch
-  #     - kibana
-  #   network_mode: "host"
+  filebeat:
+    build: ./filebeat/
+    container_name: filebeat
+    volumes:
+      - ./logs:/src/logs
+      - /var/lib/docker:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - wishlist
+      - elasticsearch
+      - kibana
+    network_mode: "host"
 
-  # elasticsearch:
-  #   build: ./elasticsearch/
-  #   container_name: elasticsearch
-  #   ports:
-  #     - "9200:9200"
-  #     - "9300:9300"
+  elasticsearch:
+    build: ./elasticsearch/
+    container_name: elasticsearch
+    ports:
+      - "9200:9200"
+      - "9300:9300"
 
-  # kibana:
-  #   build: ./kibana/
-  #   container_name: kibana
-  #   ports:
-  #     - "5601:5601"
-  #   depends_on:
-  #     - elasticsearch
+  kibana:
+    build: ./kibana/
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
 
 volumes:
     elasticsearch_data:

@@ -1,116 +1,33 @@
-# Aplicação de Lista de Tarefas: Visão Geral e Configuração
+# Ponderada 4
 
-## Visão Geral da Aplicação
-Esta aplicação de Lista de Tarefas consiste em um frontend em Flutter e um backend em FastAPI. O backend é projetado de forma assíncrona e monolítica, utilizando PostgreSQL para armazenamento de dados e Docker Compose para orquestração de contêineres. O mecanismo de autenticação utiliza JWTs (JSON Web Tokens) com chaves públicas e privadas, garantindo comunicação segura e armazenamento de tokens.
+Nesta ponderada, foi desenvolvido um sistema assíncrono de microsserviços com armazenamento de observabilidade de logs com o ELK stack. Para tanto, utilizou-se do sistema de logs do Encontro 11 como base. Essse sistema, inicialmente, realizava o log de apenas um container, contendo dois serviços dentro de si (Usuarios e Produtos), utilizando Filebeat, Elastic Search e Kibana. Nesse caso, os logs de cada servico eram salvos em um arquivo de log, atraves d abiblioteca logging, que entao alimentava o filebeat, elastic search e kiaban.
 
-### Frontend: Flutter
-O frontend é construído usando Flutter, um framework popular para a construção de aplicativos móveis multiplataforma. Ele inclui funcionalidades para adicionar, editar e excluir tarefas, com gerenciamento de estado para garantir que a interface do usuário permaneça sincronizada com o backend.
+Nesta aplicaçao, a fim de adicionar logs de microsservicos em containrs diferentes e de um gateway em nginx, comecamos separando usuarios e produtos em microsserivos diferentes e ciando o microsserivoc wishlisht, que associa produtos a usuarios. Criamos um pNesta ponderada, desenvolvemos um sistema assíncrono de microsserviços com armazenamento e observabilidade de logs utilizando a ELK stack. Usamos o sistema de logs do Encontro 11 como base, que originalmente registrava logs de apenas um container contendo dois serviços (Usuários e Produtos) usando Filebeat, Elasticsearch e Kibana. Nesse sistema inicial, os logs de cada serviço eram salvos em um arquivo de log através da biblioteca logging, que então alimentava o Filebeat, Elasticsearch e Kibana.
 
-#### Componentes Principais
-- LoginScreen: A tela de início, que realiza a requisição de login com email e senha e salva o token recebido de forma segura. 
-- TodoListScreen: A tela principal que exibe a lista de tarefas.
-- TaskTile: Um widget que representa uma única tarefa, incluindo opções para editar e excluir a tarefa.
+Para esta aplicação, aprimoramos o sistema separando os serviços de Usuários e Produtos em microsserviços distintos e adicionamos um novo microsserviço chamado Wishlist, que associa produtos a usuários. Também substituímos o banco de dados SQLite por PostgreSQL, em um container separado, para que todos os serviços pudessem acessá-lo. Cada microsserviço criou seu próprio objeto logger. Além disso, implementamos um gateway utilizando nginx.
 
-#### Executando o Frontend
+Por fim, configuramos o Filebeat para procurar os arquivos de logs de todos os containers rodando no Docker. Dessa forma, conseguimos acessar o standard output, que inclui a biblioteca logging, de todos os microsserviços e também do gateway.
 
-1. Clonar o repositório: Clone o repositório do projeto a partir do seu sistema de controle de versão.
+## Como Rodar
+Para rodar o sistema, siga os passos abaixo:
+
+1. Navegue até a pasta `<raiz-do-projeto>/ponderada4`.
+
+2. Execute o comando:
+```
+docker-compose up
 
 ```
-git clone https://github.com/elisaflemer/ponderadas-modulo10/tree/main
-cd ponderadas-modulo10/mobile/todoapp
-```
+Isso iniciará todos os microsserviços, o banco de dados PostgreSQL, o gateway nginx e a stack ELK para observabilidade dos logs.
 
-2. Instalar dependências: Certifique-se de ter o Flutter instalado. Em seguida, execute:
+## Como Acessar os Logs no Kibana
+Para acessar os logs no Kibana, siga os passos abaixo:
 
-```
-flutter pub get
-```
-
-3. Executar o aplicativo: Conecte um dispositivo ou inicie um emulador e execute:
-
-```
-flutter run
-```
-
-### Backend: FastAPI
-O backend é implementado usando FastAPI, um framework web moderno e rápido para a construção de APIs com Python 3.7+. O banco de dados utilizado é o PostgreSQL, e o Docker Compose é usado para gerenciar os serviços.
-
-#### Componentes Principais
-- FastAPI: Lida com os endpoints e a lógica da API.
-- PostgreSQL: O banco de dados usado para armazenar tarefas.
-- Docker Compose: Gerencia a aplicação de múltiplos contêineres, garantindo que o backend e o banco de dados funcionem juntos perfeitamente.
-
-O FastAPI suporta operações assíncronas, que são usadas para lidar com requisições de API de forma eficiente. A natureza assíncrona garante que a aplicação possa lidar com múltiplas requisições simultaneamente, melhorando o desempenho e a capacidade de resposta.
-
-#### Executando o Backend
-
-1. Clone este repositório.
-
-```
-git clone https://github.com/elisaflemer/ponderadas-modulo10/tree/main
-cd ponderadas-modulo10/fastapi
-```
-
-2. Configurar o ambiente: Certifique-se de ter o Docker e Docker Compose instalados.
-
-3. Executar o Docker Compose: No diretório do projeto, execute:
-
-```
-docker-compose up --build
-```
-
-### Autenticação com JWT
-A autenticação é feita usando JWTs (JSON Web Tokens), com chaves pública e privada para assinar e verificar os tokens. Os tokens JWT são armazenados de forma segura no dispositivo móvel usando Flutter Secure Storage.
-
-### Armazenamento Seguro
-Os tokens JWT são armazenados no dispositivo móvel de forma segura, utilizando a biblioteca flutter_secure_storage no Flutter. Isso garante que os tokens de autenticação estejam protegidos contra acessos não autorizados.
-
-## Demo
-
-
-https://github.com/elisaflemer/ponderadas-modulo10/assets/99259251/c7b9e0d9-25df-48c8-aa4a-e7bbf32d3251
-
-
-
-================================================================================================================================================
-# Ponderadas anteriores 
-
-## Teste de Escalabilidade
-
-O teste de escalabilidade, descrito no código Python com asyncio e aiohttp, é um experimento para comparar o desempenho dos dois servidores em condições de carga simultânea. O código gera uma série de solicitações HTTP para cada servidor, executando operações de cadastro, login e criação de tarefas. O objetivo é medir e comparar o tempo médio de resposta para grupos de solicitações enviadas aos dois servidores. O teste inclui:
-
-- Registro de usuário com nome e senha gerados aleatoriamente.
-- Login do usuário para obter um JWT.
-- Criação de uma tarefa usando o JWT.
-- Os tempos médios por grupo para cada servidor são calculados e comparados para determinar qual servidor responde mais rapidamente sob carga.
-  
-### Resultado
-
-```
-Starting the requests...
-Total time for all request groups: 12.28 seconds
-Average time per group for Server 1: 3.0701 seconds
-Average time per group for Server 2: 2.5598 seconds
-Server 2 (Async) is faster.
-```
-
-## Como executar
-
-### FastAPI
-
-1. Entre na pasta `fastapi`
-2. Execute o seguinte comando: `docker compose up`
+1. Abra o navegador e acesse `http://localhost:5601` para abrir o Kibana.
+2. No Kibana, vá para "Management" no menu lateral.
+3. Selecione "Index Patterns".
+4. Clique em "Create index pattern".
+5. No campo "Index pattern", digite filebeat-* e clique em "Next step".
+6. No campo "Time Filter field name", selecione @timestamp e clique em "Create index pattern".
    
-### Flask
-
-1. Entre na pasta `flask`
-2. Execute o seguinte comando: `docker compose up`
-
-### Teste de escalabilidade
-
-1. Volte para a pasta raiz
-2. Execute o seguinte comando: `python3 performance_test.py`
-
-## Demo
-
-[Screencast from 2024-04-29 10-15-41.webm](https://github.com/elisaflemer/ponderadas-modulo10/assets/99259251/83d687f1-99a3-4c08-af8f-d6d9269aa328)
+Agora você poderá visualizar os logs dos microsserviços no Kibana. Utilize as funcionalidades de busca e filtragem para analisar os logs conforme necessário.

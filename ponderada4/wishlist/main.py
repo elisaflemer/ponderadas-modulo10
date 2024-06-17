@@ -20,7 +20,6 @@ api_router.include_router(wishlist_router)
 
 @app.on_event("startup")
 async def startup():
-    print('AAAAAAAAAAAAAAAAAAAAAA')
     logger.info("Starting up and initializing database")
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
