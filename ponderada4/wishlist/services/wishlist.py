@@ -1,7 +1,7 @@
 # src/services/usuarios.py
 
 from fastapi import HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from repository.wishlist import WishlistRepository
 from models.wishlist import Wishlist
 from schemas.wishlist import Wishlist as WishlistSchema
@@ -10,22 +10,22 @@ class WishlistService:
     def __init__(self):
         self.repository = WishlistRepository()
 
-    def get(self, wishlist_id):
-        wishlist = self.repository.get(wishlist_id)
-        if usuario is None:
+    def get(self, wishlist_id, db: AsyncSession):
+        wishlist = self.repository.get(wishlist_id, db)
+        if wishlist is None:
             raise HTTPException(status_code=404, detail="Usuario não encontrado")
         return wishlist
 
-    def get_all(self):
-        return self.repository.get_all()
+    def get_all(self, db: AsyncSession):
+        return self.repository.get_all(db)
 
-    def add(self, wishlist : WishlistSchema):
-        wishlist = Wishlist(**wishlist.dict())
+    def add(self, wishlist : WishlistSchema, db: AsyncSession):
+        wishlist = Wishlist(**wishlist.dict(db))
         return self.repository.add(wishlist)
 
-    def update(self, wishlist_id, wishlist : WishlistSchema):
+    def update(self, wishlist_id, wishlist : WishlistSchema, db: AsyncSession):
         wishlist = Wishlist(**wishlist.dict())
-        return self.repository.update(wishlist_id, wishlist)
+        return self.repository.update(wishlist_id, wishlist, db)
 
-    def delete(self, wishlist_id):
-        return self.repository.delete(wishlist_id)
+    def delete(self, wishlist_id, db: AsyncSession):
+        return self.repository.delete(wishlist_id, db)

@@ -28,3 +28,6 @@ elasticsearch.password: kibana
 #xpack.encryptedSavedObjects.encryptionKey:
 #xpack.reporting.encryptionKey:
 
+logging.root.level: error
+
+

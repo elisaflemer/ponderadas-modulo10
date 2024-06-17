@@ -15,3 +15,13 @@ class Produto(Base):
 
     def __repr__(self):
         return f"<Produto(nome='{self.nome}', descricao='{self.descricao}, id={self.id}', criado_em='{self.data_criacao}', modificado_em='{self.data_modificacao}')>"
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'nome': self.nome,
+            'descricao': self.descricao,
+            'preco': self.preco,
+            'data_criacao': self.data_criacao,
+            'data_modificacao': self.data_modificacao
+        }

@@ -2,7 +2,6 @@
 
 from models.wishlist import Wishlist
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.sql import select, update
 from datetime import datetime
 
 class WishlistRepository:

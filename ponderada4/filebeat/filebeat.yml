@@ -42,6 +42,9 @@ output.elasticsearch:
 setup.kibana:
   host: "http://kibana:5601"
 
+logging.level: error
+
+
 http:
   enabled: true
   host: 0.0.0.0
