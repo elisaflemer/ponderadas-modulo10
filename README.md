@@ -31,3 +31,9 @@ Para acessar os logs no Kibana, siga os passos abaixo:
 6. No campo "Time Filter field name", selecione @timestamp e clique em "Create index pattern".
    
 Agora você poderá visualizar os logs dos microsserviços no Kibana. Utilize as funcionalidades de busca e filtragem para analisar os logs conforme necessário.
+
+
+
+
+https://github.com/elisaflemer/ponderadas-modulo10/assets/99259251/acebe0d8-84a4-4879-bf2a-8b103777f321
+
